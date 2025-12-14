@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cosmic Clickers - Event Edition</title>
+    <title>Cosmic Clickers - Menu Update</title>
     <style>
         /* --- CSS VARIABLES & BASE --- */
         :root {
@@ -52,13 +52,85 @@
         body.event-candy-sage { background: linear-gradient(135deg, #fbcfe8, #a5b4fc); }
         body.event-grassland-joy { background: linear-gradient(135deg, #4ade80, #78350f); }
 
+        /* --- MAIN MENU (NEW) --- */
+        #main-menu-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 5000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        
+        #main-menu-overlay h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+            animation: floatText 3s ease-in-out infinite;
+        }
+
+        @keyframes floatText {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .menu-play-btn {
+            font-size: 1.5rem;
+            padding: 15px 50px;
+            background: var(--green);
+            border: none;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px var(--green);
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 30px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .menu-play-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 40px var(--green);
+        }
+
+        .menu-stats {
+            margin-top: 20px;
+            color: var(--grey);
+            font-size: 0.9rem;
+        }
+
+        /* --- TOP LEFT MENU BUTTON (NEW) --- */
+        #top-menu-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 20;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
         /* --- HEADER & CURRENCY --- */
         header {
             width: 100%;
             padding: 15px;
+            padding-left: 100px; /* Space for menu button */
             background: rgba(0,0,0,0.5);
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end; /* Align right to accommodate menu btn */
             align-items: center;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             z-index: 10;
@@ -123,14 +195,8 @@
             font-size: 0.85rem;
         }
 
-        .tab-btn:hover {
-            color: var(--text-color);
-        }
-
-        .tab-btn.active {
-            color: var(--primary);
-            box-shadow: inset 0 -3px 0 0 var(--primary);
-        }
+        .tab-btn:hover { color: var(--text-color); }
+        .tab-btn.active { color: var(--primary); box-shadow: inset 0 -3px 0 0 var(--primary); }
 
         .panel-container {
             width: 100%;
@@ -140,14 +206,8 @@
             padding: 10px;
         }
 
-        .panel {
-            display: none;
-            padding: 10px;
-        }
-
-        .panel.active {
-            display: block;
-        }
+        .panel { display: none; padding: 10px; }
+        .panel.active { display: block; }
 
         /* --- SHOP ITEMS --- */
         .shop-item {
@@ -161,15 +221,8 @@
             transition: background 0.2s;
         }
 
-        .shop-item strong {
-            color: var(--secondary);
-            font-size: 1rem;
-        }
-
-        .shop-item small {
-            color: var(--grey);
-            font-size: 0.75rem;
-        }
+        .shop-item strong { color: var(--secondary); font-size: 1rem; }
+        .shop-item small { color: var(--grey); font-size: 0.75rem; }
 
         .btn-buy {
             padding: 8px 15px;
@@ -182,11 +235,7 @@
             transition: opacity 0.2s;
         }
 
-        .btn-buy:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: var(--cooldown-color);
-        }
+        .btn-buy:disabled { opacity: 0.5; cursor: not-allowed; background: var(--cooldown-color); }
         
         /* --- SETTINGS/TOGGLES --- */
         .toggle-row {
@@ -198,29 +247,17 @@
             background: rgba(255, 255, 255, 0.05);
             border-radius: 8px;
         }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 24px;
-        }
+        .switch { position: relative; display: inline-block; width: 40px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
-            position: absolute;
-            cursor: pointer;
+            position: absolute; cursor: pointer;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
+            background-color: #ccc; transition: .4s; border-radius: 24px;
         }
         .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px; width: 16px;
-            left: 4px; bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+            position: absolute; content: "";
+            height: 16px; width: 16px; left: 4px; bottom: 4px;
+            background-color: white; transition: .4s; border-radius: 50%;
         }
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(16px); }
@@ -244,19 +281,10 @@
             text-align: center;
             position: relative;
         }
-        .theme-item.active-theme {
-            border-color: var(--primary);
-            box-shadow: 0 0 10px var(--primary);
-        }
+        .theme-item.active-theme { border-color: var(--primary); box-shadow: 0 0 10px var(--primary); }
 
         /* --- ADMIN/MODAL --- */
-        #admin-trigger {
-            position: absolute;
-            top: 0; right: 0;
-            width: 50px; height: 50px;
-            z-index: 100;
-            cursor: pointer;
-        }
+        #admin-trigger { position: absolute; top: 0; right: 0; width: 50px; height: 50px; z-index: 100; cursor: pointer; }
         .modal {
             display: none;
             position: fixed;
@@ -277,27 +305,11 @@
             overflow-y: auto;
             box-shadow: 0 10px 20px rgba(0,0,0,0.5);
         }
-        .admin-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .admin-input {
-            flex-grow: 1;
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid #475569;
-            background: #0f172a;
-            color: var(--text-color);
-        }
+        .admin-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .admin-input { flex-grow: 1; padding: 8px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: var(--text-color); }
 
         /* --- NOTIFICATION AREA --- */
-        #notification-area {
-            position: fixed;
-            top: 70px;
-            right: 10px;
-            z-index: 2000;
-        }
+        #notification-area { position: fixed; top: 70px; right: 10px; z-index: 2000; }
         .notif {
             background: rgba(0, 0, 0, 0.8);
             color: white;
@@ -316,12 +328,7 @@
         }
 
         /* --- ACTIVE SKILLS & GOLDEN PLANET --- */
-        #active-skills {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
+        #active-skills { display: flex; gap: 15px; margin-bottom: 20px; }
         .skill-btn {
             padding: 10px 15px;
             background: var(--primary);
@@ -334,16 +341,11 @@
             height: 40px;
             transition: background 0.2s, opacity 0.2s;
         }
-
-        .skill-btn:disabled {
-            background: var(--cooldown-color);
-            cursor: not-allowed;
-        }
+        .skill-btn:disabled { background: var(--cooldown-color); cursor: not-allowed; }
 
         .golden-planet {
             position: absolute;
-            width: 50px;
-            height: 50px;
+            width: 50px; height: 50px;
             background: radial-gradient(circle at 30% 30%, gold, var(--cooldown-color));
             border-radius: 50%;
             box-shadow: 0 0 20px gold;
@@ -352,17 +354,14 @@
             z-index: 5;
             transition: opacity 0.3s;
         }
-        @keyframes pulse {
-            from { transform: scale(1); }
-            to { transform: scale(1.1); }
-        }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
         
-        /* --- EVENT HUD (FIXED ANIMATION) --- */
+        /* --- EVENT HUD --- */
         #event-hud {
             position: fixed;
             top: 15px;
             left: 50%;
-            transform: translateX(-50%) translateY(-150px); /* Hidden by default */
+            transform: translateX(-50%) translateY(-150px);
             background: rgba(0, 0, 0, 0.9);
             border: 2px solid var(--green);
             padding: 10px 20px;
@@ -375,34 +374,17 @@
             opacity: 0;
             transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
         }
-        
-        #event-hud.active {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
+        #event-hud.active { opacity: 1; transform: translateX(-50%) translateY(0); }
         .hud-circle {
-            width: 50px;
-            height: 50px;
+            width: 50px; height: 50px;
             border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            font-size: 0.9rem;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; font-size: 0.9rem;
         }
         .hud-mult { background: var(--primary); }
-        .hud-time { background: var(--cooldown-color); width: 60px; /* Wider for 00:00 */ }
+        .hud-time { background: var(--cooldown-color); width: 60px; }
         
-        /* Event particles */
-        #particle-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            overflow: hidden;
-            z-index: 0; 
-        }
+        #particle-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
 
         /* MINI-GAMES */
         .mini-game-container {
@@ -413,29 +395,21 @@
             text-align: center;
             border: 1px solid rgba(255,255,255,0.1);
         }
-
-        /* Slot Machine Specifics */
         #slots {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-            margin-bottom: 15px;
-            font-size: 2.5rem;
-            font-weight: bold;
-            height: 50px;
-            overflow: hidden;
+            display: flex; justify-content: center; gap: 5px;
+            margin-bottom: 15px; font-size: 2.5rem; font-weight: bold;
+            height: 50px; overflow: hidden;
         }
         .slot-reel {
-            width: 60px;
-            background: #0f172a;
+            width: 60px; background: #0f172a;
             border: 2px solid var(--secondary);
             border-radius: 5px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
         }
 
         @media (max-width: 600px) {
+            header { padding-left: 10px; justify-content: space-between; margin-top: 40px; }
+            #top-menu-btn { top: 10px; left: 10px; width: auto; }
             .currency-container { gap: 5px; flex-wrap: wrap; justify-content: flex-end;}
             .currency { font-size: 0.8rem; padding: 4px 8px; }
             .skill-btn { width: 90px; height: 35px; font-size: 0.8rem; padding: 5px; }
@@ -444,6 +418,18 @@
     </style>
 </head>
 <body class="theme-default">
+
+    <div id="main-menu-overlay">
+        <h1>COSMIC CLICKERS</h1>
+        <div class="menu-stats">
+            Current Shards: <span id="menu-shards">0</span> 💎<br>
+            Total Rebirths: <span id="menu-rebirths">0</span> ♻️
+        </div>
+        <button class="menu-play-btn" onclick="startGame()">PLAY</button>
+        <div style="margin-top:20px; font-size:0.8rem; color:#94a3b8">v3.0 - Menu Update</div>
+    </div>
+
+    <button id="top-menu-btn" onclick="openMainMenu()">☰ MENU</button>
 
     <div id="admin-trigger" onclick="openAdminModal()"></div>
 
@@ -456,7 +442,6 @@
     </div>
 
     <header>
-        <div style="font-weight:900; color:var(--primary)">CC</div>
         <div class="currency-container">
             <div class="currency">🖱️ <span id="display-clicks">0</span></div>
             <div class="currency" style="color:#d8b4fe">💎 <span id="display-shards">0</span></div>
@@ -523,7 +508,7 @@
         <div id="panel-minigames" class="panel">
             <div class="mini-game-container">
                 <h3>Slot Machine</h3>
-                <p style="font-size:0.8rem">Cost: 1000 Clicks. Win Chance: 20% (5x Clicks per Tap + 0.5💎)</p>
+                <p style="font-size:0.8rem">Cost: 1000 Clicks. Win Chance: 20%</p>
                 <div id="slots">
                     <div class="slot-reel" id="reel-1">?</div>
                     <div class="slot-reel" id="reel-2">?</div>
@@ -533,7 +518,6 @@
             </div>
             <div class="mini-game-container">
                 <h3>Growing Garden (WIP)</h3>
-                <p>Grow rare cosmic plants for passive rewards.</p>
                 <button class="btn-buy" disabled style="width:100%">Coming Soon</button>
             </div>
         </div>
@@ -654,7 +638,7 @@
             { id: 'theme-silver', name: 'Silver', cost: 1, type: 'plain', color: '#6b7280' }
         ];
 
-        /* --- ADVANCED AUDIO ENGINE (NO MORE BRRRR) --- */
+        /* --- AUDIO ENGINE --- */
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         const audioCtx = new AudioContext();
         let musicTimer = null;
@@ -666,24 +650,20 @@
             const gain = audioCtx.createGain();
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-            
             osc.type = type;
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            
             gain.gain.setValueAtTime(0, audioCtx.currentTime);
             gain.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 0.05);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-
             osc.start();
             osc.stop(audioCtx.currentTime + duration);
         }
 
         function playHiHat() {
-            const bufferSize = audioCtx.sampleRate * 0.05; // 50ms
+            const bufferSize = audioCtx.sampleRate * 0.05; 
             const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
             const data = buffer.getChannelData(0);
             for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-
             const noise = audioCtx.createBufferSource();
             noise.buffer = buffer;
             const filter = audioCtx.createBiquadFilter();
@@ -691,7 +671,6 @@
             filter.frequency.value = 5000;
             const gain = audioCtx.createGain();
             gain.gain.value = 0.05;
-
             noise.connect(filter);
             filter.connect(gain);
             gain.connect(audioCtx.destination);
@@ -700,28 +679,24 @@
 
         function musicLoop() {
             if (!game.settings.music) return;
+            // Only play if menu is NOT visible
+            if (document.getElementById('main-menu-overlay').style.display !== 'none') return;
 
             if (currentMusicType === 'action') {
-                // "Spy" Theme Baseline (G Minor): G, G, Bb, C
                 const beat = noteIndex % 16;
-                // Bassline
                 if (beat === 0) playTone(98.00, 'sawtooth', 0.4, 0.15); // G2
                 if (beat === 3) playTone(98.00, 'sawtooth', 0.4, 0.15); // G2
                 if (beat === 6) playTone(116.54, 'square', 0.2, 0.1);  // Bb2
                 if (beat === 8) playTone(130.81, 'square', 0.2, 0.1);  // C3
-                
-                // Hi-Hats (Fast rhythm)
                 if (beat % 2 === 0) playHiHat();
             } 
             else if (currentMusicType === 'chill') {
-                // Slow Arpeggio
                 const beat = noteIndex % 32;
                 if (beat === 0) playTone(196.00, 'triangle', 2, 0.05); // G3
                 if (beat === 8) playTone(246.94, 'triangle', 2, 0.05); // B3
                 if (beat === 16) playTone(293.66, 'triangle', 2, 0.05); // D4
                 if (beat === 24) playTone(392.00, 'triangle', 2, 0.05); // G4
             }
-
             noteIndex++;
         }
 
@@ -732,12 +707,8 @@
                 currentMusicType = 'none';
                 return;
             }
-
             if (audioCtx.state === 'suspended') audioCtx.resume();
-
             const targetType = game.event.active ? 'action' : 'chill';
-            
-            // Speed of loop depends on mode
             const interval = targetType === 'action' ? 150 : 250; 
 
             if (currentMusicType !== targetType) {
@@ -748,17 +719,8 @@
             }
         }
 
-        // SFX
-        function playClickSound() {
-            if (!game.settings.sfx) return;
-            playTone(400 + Math.random() * 200, 'sine', 0.1, 0.1);
-        }
-        
-        function playSkillSound() {
-            if (!game.settings.sfx) return;
-            playTone(600, 'square', 0.3, 0.1);
-            setTimeout(() => playTone(800, 'square', 0.3, 0.1), 100);
-        }
+        function playClickSound() { if (game.settings.sfx) playTone(400 + Math.random() * 200, 'sine', 0.1, 0.1); }
+        function playSkillSound() { if (game.settings.sfx) { playTone(600, 'square', 0.3, 0.1); setTimeout(() => playTone(800, 'square', 0.3, 0.1), 100); } }
 
         /* --- UI UTILITIES --- */
         function formatNum(num) {
@@ -788,6 +750,20 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelector(`.tab-btn[onclick="switchTab('${id}')"]`).classList.add('active');
         }
+
+        /* --- MENU LOGIC --- */
+        function startGame() {
+            document.getElementById('main-menu-overlay').style.display = 'none';
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            updateMusicState();
+        }
+
+        function openMainMenu() {
+            document.getElementById('main-menu-overlay').style.display = 'flex';
+            // Update stats on menu
+            document.getElementById('menu-shards').innerText = formatNum(game.shards);
+            document.getElementById('menu-rebirths').innerText = formatNum(game.rebirths);
+        }
         
         /* --- CORE LOGIC --- */
         function calculateClickPower() {
@@ -806,6 +782,9 @@
 
         function clickPlanet(e) {
             if(e) e.preventDefault(); 
+            // Prevent clicking if menu is open
+            if(document.getElementById('main-menu-overlay').style.display === 'flex') return;
+
             game.clicks += calculateClickPower();
             playClickSound();
             updateDisplay();
@@ -825,6 +804,10 @@
             document.getElementById('display-cpt').innerText = formatNum(calculateClickPower());
             document.getElementById('display-cps').innerText = formatNum(calculateCPS());
             document.getElementById('rebirth-earn').innerText = formatNum(Math.floor(game.clicks / 2000) + game.shardUpgrades.extraShard);
+
+            // Menu Stats Update (in real time if menu is open)
+            document.getElementById('menu-shards').innerText = formatNum(game.shards);
+            document.getElementById('menu-rebirths').innerText = formatNum(game.rebirths);
 
             // Costs
             document.getElementById('cost-click').innerText = formatNum(game.clickCost);
@@ -854,7 +837,8 @@
             if (game.clicks >= game.clickCost) {
                 game.clicks -= game.clickCost;
                 game.clickMultiplier *= 2;
-                game.clickCost = Math.floor(game.clickCost * 4.5);
+                // CHANGED: Cost now doubles (x2) instead of x4.5
+                game.clickCost = Math.floor(game.clickCost * 2);
                 updateDisplay();
             }
         }
@@ -910,7 +894,6 @@
 
             document.body.className = data.theme;
             
-            // Show HUD (and keep it there)
             const hud = document.getElementById('event-hud');
             document.getElementById('hud-name').innerText = data.name;
             document.getElementById('hud-mult').innerText = data.mult + 'X';
@@ -926,10 +909,7 @@
             document.body.className = game.event.originalTheme || 'theme-default'; 
             game.event.active = false;
             game.event.multiplier = 1;
-            
-            // Hide HUD
             document.getElementById('event-hud').classList.remove('active');
-            
             stopParticles();
             updateMusicState();
             notify("Event Ended.");
@@ -1039,7 +1019,19 @@
             if(t==='shards') game.shards += val;
             updateDisplay();
         }
-        function hardReset() { localStorage.removeItem('cosmicClickerSave'); location.reload(); }
+        
+        // --- HARD RESET NOW GOES TO MENU ---
+        function hardReset() {
+            if (confirm("Are you sure? This will wipe everything!")) {
+                localStorage.removeItem('cosmicClickerSave');
+                game = JSON.parse(JSON.stringify(defaultState));
+                // Instead of reload, just reset state and open menu
+                endEvent();
+                updateDisplay();
+                renderThemes();
+                openMainMenu();
+            }
+        }
 
         /* --- SAVE/LOAD --- */
         function saveGame() { localStorage.setItem('cosmicClickerSave', JSON.stringify(game)); }
@@ -1067,10 +1059,13 @@
             renderThemes();
             updateDisplay();
             updateMusicState();
+            
+            // ALWAYS SHOW MENU ON LOAD
+            openMainMenu();
         }
 
         window.onload = loadGame;
         setInterval(saveGame, 30000);
     </script>
 </body>
-</html>
+    </html>
