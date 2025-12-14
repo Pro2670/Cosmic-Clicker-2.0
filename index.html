@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cosmic Clickers - Event Edition</title>
+    <style>
+        /* --- CSS VARIABLES & BASE --- */
+        :root {
+            --primary: #a855f7; /* Violet */
+            --secondary: #3b82f6; /* Blue */
+            --bg-color: #0f172a; /* Slate 900 */
+            --panel-bg: rgba(30, 41, 59, 0.95); /* Slate 800 transparent */
+            --text-color: #f8fafc; /* White */
+            --green: #22c55e; /* Green 500 */
+            --grey: #94a3b8; /* Slate 400 */
+            --danger: #ef4444; /* Red 500 */
+            --cooldown-color: #f97316; /* Orange */
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.5s ease;
+            user-select: none;
+            background: linear-gradient(135deg, #000000, #434343);
+            position: relative;
+        }
+
+        /* --- THEMES --- */
+        body.theme-default { background: linear-gradient(135deg, #000000, #434343); }
+        body.theme-mars { background: #7f1d1d; }
+        body.theme-neptune { background: #1e3a8a; }
+        body.theme-gold { background: linear-gradient(135deg, #BF953F, #FCF6BA); }
+        body.theme-nebula { background: linear-gradient(135deg, #4c1d95, #db2777); }
+        body.theme-matrix { background: #000000; color: #0f0; }
+        body.theme-lava { background: linear-gradient(135deg, #f43f5e, #f97316); }
+        body.theme-aqua { background: #06b6d4; }
+        body.theme-void { background: #000000; }
+        body.theme-sunset { background: linear-gradient(135deg, #fef08a, #f97316); }
+        body.theme-silver { background: #6b7280; }
+        
+        /* EVENT THEMES */
+        body.event-candy-sage { background: linear-gradient(135deg, #fbcfe8, #a5b4fc); }
+        body.event-grassland-joy { background: linear-gradient(135deg, #4ade80, #78350f); }
+
+        /* --- HEADER & CURRENCY --- */
+        header {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+        
+        .currency-container { 
+            display: flex; 
+            gap: 15px; 
+            font-weight: bold; 
+            font-size: 0.9rem; 
+        }
+        .currency {
+            background: rgba(255,255,255,0.1);
+            padding: 5px 12px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            white-space: nowrap;
+        }
+
+        /* --- MAIN CLICK AREA --- */
+        #game-area {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            width: 100%;
+            position: relative;
+        }
+
+        #clicker-btn {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, var(--primary), #000);
+            border: 4px solid rgba(255,255,255,0.3);
+            box-shadow: 0 0 50px var(--primary);
+            cursor: pointer;
+            position: relative;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            transition: transform 0.1s;
+        }
+
+        /* --- TABS & PANELS --- */
+        .tabs {
+            display: flex;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn {
+            flex-grow: 1;
+            padding: 12px 0;
+            background: transparent;
+            border: none;
+            color: var(--grey);
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s, background 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-color);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            box-shadow: inset 0 -3px 0 0 var(--primary);
+        }
+
+        .panel-container {
+            width: 100%;
+            flex-grow: 1;
+            overflow-y: auto;
+            background: var(--panel-bg);
+            padding: 10px;
+        }
+
+        .panel {
+            display: none;
+            padding: 10px;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* --- SHOP ITEMS --- */
+        .shop-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 10px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .shop-item strong {
+            color: var(--secondary);
+            font-size: 1rem;
+        }
+
+        .shop-item small {
+            color: var(--grey);
+            font-size: 0.75rem;
+        }
+
+        .btn-buy {
+            padding: 8px 15px;
+            background: var(--green);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-buy:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: var(--cooldown-color);
+        }
+        
+        /* --- SETTINGS/TOGGLES --- */
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 10px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px; width: 16px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        /* --- THEME GRID --- */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            padding-top: 10px;
+        }
+        .theme-item {
+            aspect-ratio: 1 / 1;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.75rem;
+            text-align: center;
+            position: relative;
+        }
+        .theme-item.active-theme {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        /* --- ADMIN/MODAL --- */
+        #admin-trigger {
+            position: absolute;
+            top: 0; right: 0;
+            width: 50px; height: 50px;
+            z-index: 100;
+            cursor: pointer;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+        .admin-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .admin-input {
+            flex-grow: 1;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: var(--text-color);
+        }
+
+        /* --- NOTIFICATION AREA --- */
+        #notification-area {
+            position: fixed;
+            top: 70px;
+            right: 10px;
+            z-index: 2000;
+        }
+        .notif {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 15px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            opacity: 0;
+            animation: fadeInOut 2.5s ease-in-out forwards;
+            font-size: 0.9rem;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(100%); }
+            10% { opacity: 1; transform: translateX(0); }
+            90% { opacity: 1; transform: translateX(0); }
+            100% { opacity: 0; transform: translateX(100%); }
+        }
+
+        /* --- ACTIVE SKILLS & GOLDEN PLANET --- */
+        #active-skills {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .skill-btn {
+            padding: 10px 15px;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            width: 120px;
+            height: 40px;
+            transition: background 0.2s, opacity 0.2s;
+        }
+
+        .skill-btn:disabled {
+            background: var(--cooldown-color);
+            cursor: not-allowed;
+        }
+
+        .golden-planet {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle at 30% 30%, gold, var(--cooldown-color));
+            border-radius: 50%;
+            box-shadow: 0 0 20px gold;
+            cursor: pointer;
+            animation: pulse 1s infinite alternate;
+            z-index: 5;
+            transition: opacity 0.3s;
+        }
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+        
+        /* --- EVENT HUD (FIXED ANIMATION) --- */
+        #event-hud {
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-150px); /* Hidden by default */
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--green);
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            font-size: 0.9rem;
+            z-index: 100;
+            opacity: 0;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
+        }
+        
+        #event-hud.active {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .hud-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .hud-mult { background: var(--primary); }
+        .hud-time { background: var(--cooldown-color); width: 60px; /* Wider for 00:00 */ }
+        
+        /* Event particles */
+        #particle-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0; 
+        }
+
+        /* MINI-GAMES */
+        .mini-game-container {
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Slot Machine Specifics */
+        #slots {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 15px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            height: 50px;
+            overflow: hidden;
+        }
+        .slot-reel {
+            width: 60px;
+            background: #0f172a;
+            border: 2px solid var(--secondary);
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @media (max-width: 600px) {
+            .currency-container { gap: 5px; flex-wrap: wrap; justify-content: flex-end;}
+            .currency { font-size: 0.8rem; padding: 4px 8px; }
+            .skill-btn { width: 90px; height: 35px; font-size: 0.8rem; padding: 5px; }
+            .tab-btn { font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body class="theme-default">
+
+    <div id="admin-trigger" onclick="openAdminModal()"></div>
+
+    <div id="particle-overlay"></div>
+
+    <div id="event-hud">
+        <strong style="color:var(--text-color);"><span id="hud-name"></span></strong>
+        <div class="hud-circle hud-mult"><span id="hud-mult"></span></div>
+        <div class="hud-circle hud-time"><span id="hud-time"></span></div>
+    </div>
+
+    <header>
+        <div style="font-weight:900; color:var(--primary)">CC</div>
+        <div class="currency-container">
+            <div class="currency">🖱️ <span id="display-clicks">0</span></div>
+            <div class="currency" style="color:#d8b4fe">💎 <span id="display-shards">0</span></div>
+            <div class="currency" style="color:#fca5a5">♻️ <span id="display-rebirths">0</span></div>
+        </div>
+    </header>
+
+    <div id="game-area">
+        <div style="margin-bottom: 10px; opacity: 0.8; font-size: 0.9rem; text-align: center;">
+            <div id="active-skills">
+                <button class="skill-btn" id="frenzy-btn" onclick="activateFrenzy()">Frenzy (2x)</button>
+            </div>
+            <div style="margin-bottom:5px;">Per Tap: <strong id="display-cpt" style="color:var(--green)">1</strong></div>
+            <div>Auto: <strong id="display-cps" style="color:var(--secondary)">0</strong>/s</div>
+        </div>
+        <div id="clicker-btn"></div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('upgrades')">Upgrades</button>
+        <button class="tab-btn" onclick="switchTab('minigames')">Mini-Games</button>
+        <button class="tab-btn" onclick="switchTab('shards')">Shards</button>
+        <button class="tab-btn" onclick="switchTab('themes')">Themes</button>
+        <button class="tab-btn" onclick="switchTab('settings')">Settings</button>
+        <button class="tab-btn" onclick="switchTab('rebirth')" style="color: #fca5a5">Rebirth</button>
+    </div>
+
+    <div class="panel-container">
+        
+        <div id="panel-upgrades" class="panel active">
+            <h3>Click Upgrades</h3>
+            <div class="shop-item">
+                <div>
+                    <strong>Cosmic Ray</strong><br>
+                    <small>Double click power</small>
+                </div>
+                <button class="btn-buy" id="btn-up-click" onclick="buyClickUpgrade()">Buy (<span id="cost-click">50</span>)</button>
+            </div>
+
+            <h3>Auto Clickers</h3>
+            <div class="shop-item">
+                <div>
+                    <strong>Space Dust (Slow)</strong><br>
+                    <small>+1 Click/sec</small>
+                </div>
+                <button class="btn-buy" onclick="buyAuto(0)">Buy (<span id="cost-auto-0">100</span>)</button>
+            </div>
+            <div class="shop-item">
+                <div>
+                    <strong>Asteroid Miner (Med)</strong><br>
+                    <small>+10 Clicks/sec</small>
+                </div>
+                <button class="btn-buy" onclick="buyAuto(1)">Buy (<span id="cost-auto-1">500</span>)</button>
+            </div>
+            <div class="shop-item">
+                <div>
+                    <strong>Star Forge (Fast)</strong><br>
+                    <small>+50 Clicks/sec</small>
+                </div>
+                <button class="btn-buy" onclick="buyAuto(2)">Buy (<span id="cost-auto-2">2000</span>)</button>
+            </div>
+        </div>
+
+        <div id="panel-minigames" class="panel">
+            <div class="mini-game-container">
+                <h3>Slot Machine</h3>
+                <p style="font-size:0.8rem">Cost: 1000 Clicks. Win Chance: 20% (5x Clicks per Tap + 0.5💎)</p>
+                <div id="slots">
+                    <div class="slot-reel" id="reel-1">?</div>
+                    <div class="slot-reel" id="reel-2">?</div>
+                    <div class="slot-reel" id="reel-3">?</div>
+                </div>
+                <button class="btn-buy" style="width:100%" id="slot-btn" onclick="playSlots()">Spin! (1000 Clicks)</button>
+            </div>
+            <div class="mini-game-container">
+                <h3>Growing Garden (WIP)</h3>
+                <p>Grow rare cosmic plants for passive rewards.</p>
+                <button class="btn-buy" disabled style="width:100%">Coming Soon</button>
+            </div>
+        </div>
+
+        <div id="panel-shards" class="panel">
+            <h3>Shard Shop (Permanent)</h3>
+            <div class="shop-item">
+                <div>
+                    <strong>Efficient Rebirth (<span id="extraShardCount">0</span>)</strong><br>
+                    <small>+1 Shard gained per Rebirth</small>
+                </div>
+                <button class="btn-buy" id="btn-shard-extraShard" onclick="buyShardUpgrade('extraShard')">Buy (5💎)</button>
+            </div>
+            <div class="shop-item">
+                <div>
+                    <strong>Starter Pack (<span id="startBonusStatus">Not Unlocked</span>)</strong><br>
+                    <small>Start rebirths with 500 Clicks</small>
+                </div>
+                <button class="btn-buy" id="btn-shard-startBonus" onclick="buyShardUpgrade('startBonus')">Buy (10💎)</button>
+            </div>
+        </div>
+
+        <div id="panel-themes" class="panel">
+            <h3>Theme Shop</h3>
+            <p style="font-size:0.8rem">Base Colors: 1💎 | Gradients: 2💎 | Special: 5💎</p>
+            <div class="theme-grid" id="theme-grid"></div>
+        </div>
+
+        <div id="panel-settings" class="panel">
+            <h3>Settings</h3>
+            <div class="toggle-row">
+                <span>SFX</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-sfx" onchange="toggleSetting('sfx')">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="toggle-row">
+                <span>Music</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-music" onchange="toggleSetting('music')">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="shop-item">
+                <button class="btn-buy" style="background:var(--danger); width:100%" onclick="hardReset()">Hard Reset Save</button>
+            </div>
+        </div>
+
+        <div id="panel-rebirth" class="panel">
+            <div style="text-align: center;">
+                <h2 style="color:#fca5a5">Prestige</h2>
+                <p style="font-size:0.9rem">Reset progress to earn <strong style="color:#d8b4fe">Asteroid Shards</strong>.</p>
+                <div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:10px; margin:10px 0;">
+                    Shards to earn: <strong id="rebirth-earn" style="font-size:1.2rem">0</strong>💎
+                </div>
+                <button class="btn-buy" style="font-size: 1.2em; padding: 15px; width:100%" onclick="doRebirth()">REBIRTH NOW</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="color:var(--primary); margin-top:0">Admin Panel</h3>
+            <div id="admin-login">
+                <input type="password" id="admin-pass" class="admin-input" placeholder="Enter 'Geforce13!'">
+                <br><br>
+                <button class="btn-buy" onclick="checkAdmin()">Unlock</button>
+                <button class="btn-buy" style="background:#475569" onclick="closeModal('admin-modal')">Close</button>
+            </div>
+            <div id="admin-controls" style="display:none; text-align:left;">
+                <label>Run Event:</label>
+                <div class="admin-row">
+                    <select id="admin-event-select" class="admin-input">
+                        <option value="none">-- Select Event --</option>
+                        <option value="candy-sage">Candy Sage (3x, 5min)</option>
+                        <option value="grassland-joy">Grassland Joy (6x, 5min)</option>
+                    </select>
+                    <button class="btn-buy" onclick="adminRunEvent()">Run</button>
+                </div>
+                <div class="admin-row">
+                    <button class="btn-buy" onclick="adminGen('clicks')">+Clicks</button>
+                    <button class="btn-buy" onclick="adminGen('shards')">+Shards</button>
+                    <input type="number" id="admin-gen-val" class="admin-input" value="1000">
+                </div>
+                <button class="btn-buy" style="background:#475569; width:100%; margin-top:10px" onclick="closeModal('admin-modal')">Close Panel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-area"></div>
+
+    <script>
+        /* --- GAME DATA --- */
+        const defaultState = {
+            clicks: 0, shards: 0, rebirths: 0, clickCost: 50, clickMultiplier: 1, autoClickers: [0, 0, 0],
+            themesUnlocked: ['theme-default'], currentTheme: 'theme-default',
+            shardUpgrades: { extraShard: 0, startBonus: false }, settings: { sfx: true, music: false },
+            event: { active: false, name: null, multiplier: 1, duration: 0, endTime: 0, particles: null, originalTheme: 'theme-default' },
+            cooldowns: { frenzy: 0, frenzyMax: 300, frenzyDuration: 30 }, 
+            eventTimer: 0 
+        };
+
+        let game = JSON.parse(JSON.stringify(defaultState));
+        const autoRates = [1, 10, 50]; 
+
+        const themes = [
+            { id: 'theme-default', name: 'Cosmic', cost: 0, type: 'gradient', color: 'linear-gradient(135deg, #000, #434343)' },
+            { id: 'theme-mars', name: 'Mars', cost: 1, type: 'plain', color: '#7f1d1d' },
+            { id: 'theme-neptune', name: 'Neptune', cost: 1, type: 'plain', color: '#1e3a8a' },
+            { id: 'theme-gold', name: 'Gold Rush', cost: 2, type: 'gradient', color: 'linear-gradient(135deg, #BF953F, #FCF6BA)' },
+            { id: 'theme-nebula', name: 'Nebula', cost: 2, type: 'gradient', color: 'linear-gradient(135deg, #4c1d95, #db2777)' },
+            { id: 'theme-matrix', name: 'Matrix', cost: 5, type: 'special', color: '#000' },
+            { id: 'theme-lava', name: 'Lava', cost: 2, type: 'gradient', color: 'linear-gradient(135deg, #f43f5e, #f97316)' },
+            { id: 'theme-aqua', name: 'Aqua', cost: 1, type: 'plain', color: '#06b6d4' },
+            { id: 'theme-void', name: 'Void', cost: 1, type: 'plain', color: '#000000' },
+            { id: 'theme-sunset', name: 'Sunset', cost: 2, type: 'gradient', color: 'linear-gradient(135deg, #fef08a, #f97316)' },
+            { id: 'theme-silver', name: 'Silver', cost: 1, type: 'plain', color: '#6b7280' }
+        ];
+
+        /* --- ADVANCED AUDIO ENGINE (NO MORE BRRRR) --- */
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        let musicTimer = null;
+        let noteIndex = 0;
+        let currentMusicType = 'none';
+
+        function playTone(freq, type, duration, vol = 0.1) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            
+            gain.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playHiHat() {
+            const bufferSize = audioCtx.sampleRate * 0.05; // 50ms
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.value = 5000;
+            const gain = audioCtx.createGain();
+            gain.gain.value = 0.05;
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+            noise.start();
+        }
+
+        function musicLoop() {
+            if (!game.settings.music) return;
+
+            if (currentMusicType === 'action') {
+                // "Spy" Theme Baseline (G Minor): G, G, Bb, C
+                const beat = noteIndex % 16;
+                // Bassline
+                if (beat === 0) playTone(98.00, 'sawtooth', 0.4, 0.15); // G2
+                if (beat === 3) playTone(98.00, 'sawtooth', 0.4, 0.15); // G2
+                if (beat === 6) playTone(116.54, 'square', 0.2, 0.1);  // Bb2
+                if (beat === 8) playTone(130.81, 'square', 0.2, 0.1);  // C3
+                
+                // Hi-Hats (Fast rhythm)
+                if (beat % 2 === 0) playHiHat();
+            } 
+            else if (currentMusicType === 'chill') {
+                // Slow Arpeggio
+                const beat = noteIndex % 32;
+                if (beat === 0) playTone(196.00, 'triangle', 2, 0.05); // G3
+                if (beat === 8) playTone(246.94, 'triangle', 2, 0.05); // B3
+                if (beat === 16) playTone(293.66, 'triangle', 2, 0.05); // D4
+                if (beat === 24) playTone(392.00, 'triangle', 2, 0.05); // G4
+            }
+
+            noteIndex++;
+        }
+
+        function updateMusicState() {
+            if (!game.settings.music) {
+                if (musicTimer) clearInterval(musicTimer);
+                musicTimer = null;
+                currentMusicType = 'none';
+                return;
+            }
+
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const targetType = game.event.active ? 'action' : 'chill';
+            
+            // Speed of loop depends on mode
+            const interval = targetType === 'action' ? 150 : 250; 
+
+            if (currentMusicType !== targetType) {
+                if (musicTimer) clearInterval(musicTimer);
+                noteIndex = 0;
+                currentMusicType = targetType;
+                musicTimer = setInterval(musicLoop, interval);
+            }
+        }
+
+        // SFX
+        function playClickSound() {
+            if (!game.settings.sfx) return;
+            playTone(400 + Math.random() * 200, 'sine', 0.1, 0.1);
+        }
+        
+        function playSkillSound() {
+            if (!game.settings.sfx) return;
+            playTone(600, 'square', 0.3, 0.1);
+            setTimeout(() => playTone(800, 'square', 0.3, 0.1), 100);
+        }
+
+        /* --- UI UTILITIES --- */
+        function formatNum(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+            return Math.floor(num);
+        }
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function notify(msg) {
+            const area = document.getElementById('notification-area');
+            const d = document.createElement('div');
+            d.className = 'notif';
+            d.innerText = msg;
+            area.appendChild(d);
+            setTimeout(() => d.remove(), 2500);
+        }
+
+        function switchTab(id) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('panel-'+id).classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.tab-btn[onclick="switchTab('${id}')"]`).classList.add('active');
+        }
+        
+        /* --- CORE LOGIC --- */
+        function calculateClickPower() {
+            let base = game.clickMultiplier * (game.rebirths + 1);
+            let totalMult = base * game.event.multiplier; 
+            if(game.cooldowns.frenzy > 0) totalMult *= 2; 
+            return totalMult;
+        }
+
+        function calculateCPS() {
+            let cps = 0;
+            game.autoClickers.forEach((count, i) => cps += count * autoRates[i]);
+            if(game.cooldowns.frenzy > 0) cps *= 2; 
+            return cps;
+        }
+
+        function clickPlanet(e) {
+            if(e) e.preventDefault(); 
+            game.clicks += calculateClickPower();
+            playClickSound();
+            updateDisplay();
+            
+            const btn = document.getElementById('clicker-btn');
+            btn.style.transform = 'scale(0.92)';
+            setTimeout(() => btn.style.transform = 'scale(1)', 50);
+        }
+        
+        document.getElementById('clicker-btn').addEventListener('touchstart', (e) => { e.preventDefault(); clickPlanet(); }, {passive: false});
+        document.getElementById('clicker-btn').addEventListener('mousedown', clickPlanet);
+
+        function updateDisplay() {
+            document.getElementById('display-clicks').innerText = formatNum(game.clicks);
+            document.getElementById('display-shards').innerText = formatNum(game.shards);
+            document.getElementById('display-rebirths').innerText = formatNum(game.rebirths);
+            document.getElementById('display-cpt').innerText = formatNum(calculateClickPower());
+            document.getElementById('display-cps').innerText = formatNum(calculateCPS());
+            document.getElementById('rebirth-earn').innerText = formatNum(Math.floor(game.clicks / 2000) + game.shardUpgrades.extraShard);
+
+            // Costs
+            document.getElementById('cost-click').innerText = formatNum(game.clickCost);
+            document.getElementById('cost-auto-0').innerText = formatNum(Math.floor(100 * Math.pow(1.1, game.autoClickers[0])));
+            document.getElementById('cost-auto-1').innerText = formatNum(Math.floor(500 * Math.pow(1.1, game.autoClickers[1])));
+            document.getElementById('cost-auto-2').innerText = formatNum(Math.floor(2000 * Math.pow(1.1, game.autoClickers[2])));
+
+            // Frenzy Btn
+            const btn = document.getElementById('frenzy-btn');
+            if (game.cooldowns.frenzy > 0) {
+                btn.innerText = `Frenzy (${game.cooldowns.frenzy}s)`;
+                btn.disabled = true;
+                btn.style.backgroundColor = 'var(--green)';
+            } else if (game.cooldowns.frenzy < 0) {
+                btn.innerText = `Cooling (${Math.abs(game.cooldowns.frenzy)}s)`;
+                btn.disabled = true;
+                btn.style.backgroundColor = 'var(--cooldown-color)';
+            } else {
+                btn.innerText = 'Frenzy (2x)';
+                btn.disabled = false;
+                btn.style.backgroundColor = 'var(--primary)';
+            }
+        }
+
+        /* --- SHOP ACTIONS --- */
+        function buyClickUpgrade() {
+            if (game.clicks >= game.clickCost) {
+                game.clicks -= game.clickCost;
+                game.clickMultiplier *= 2;
+                game.clickCost = Math.floor(game.clickCost * 4.5);
+                updateDisplay();
+            }
+        }
+        function buyAuto(index) {
+            const cost = Math.floor((index === 0 ? 100 : index === 1 ? 500 : 2000) * Math.pow(1.1, game.autoClickers[index]));
+            if (game.clicks >= cost) {
+                game.clicks -= cost;
+                game.autoClickers[index]++;
+                updateDisplay();
+            }
+        }
+        function buyShardUpgrade(type) {
+            const cost = (type === 'extraShard') ? 5 : 10;
+            if (game.shards >= cost) {
+                game.shards -= cost;
+                if (type === 'extraShard') game.shardUpgrades.extraShard++;
+                else if (type === 'startBonus') game.shardUpgrades.startBonus = true;
+                updateDisplay();
+                document.getElementById('extraShardCount').innerText = game.shardUpgrades.extraShard;
+                document.getElementById('startBonusStatus').innerText = game.shardUpgrades.startBonus ? 'Unlocked' : 'Locked';
+            }
+        }
+        function doRebirth() {
+            let gain = Math.floor(game.clicks / 2000);
+            if(gain > 0) gain += game.shardUpgrades.extraShard;
+            
+            if (gain > 0) {
+                game.shards += gain;
+                game.rebirths++;
+                const keep = { shards: game.shards, rebirths: game.rebirths, themesUnlocked: game.themesUnlocked, currentTheme: game.currentTheme, shardUpgrades: game.shardUpgrades, settings: game.settings };
+                game = { ...defaultState, ...keep };
+                if (game.shardUpgrades.startBonus) game.clicks = 500;
+                endEvent();
+                updateDisplay();
+            }
+        }
+
+        /* --- EVENT SYSTEM --- */
+        const eventData = {
+            'candy-sage': { name: 'Candy Sage', mult: 3, duration: 300, theme: 'event-candy-sage', particles: { count: 30, color: '#fbcfe8', shape: '🍬', size: 10 } },
+            'grassland-joy': { name: 'Grassland Joy', mult: 6, duration: 300, theme: 'event-grassland-joy', particles: { count: 50, color: '#4ade80', shape: '🌿', size: 8 } }
+        };
+
+        function startEvent(key) {
+            if (game.event.active) return;
+            const data = eventData[key];
+            game.event.active = true;
+            game.event.name = data.name;
+            game.event.multiplier = data.mult;
+            game.event.duration = data.duration;
+            game.event.endTime = Date.now() + (data.duration * 1000);
+            game.event.originalTheme = document.body.className;
+
+            document.body.className = data.theme;
+            
+            // Show HUD (and keep it there)
+            const hud = document.getElementById('event-hud');
+            document.getElementById('hud-name').innerText = data.name;
+            document.getElementById('hud-mult').innerText = data.mult + 'X';
+            hud.classList.add('active');
+
+            startParticles(data.particles);
+            updateMusicState(); 
+            notify(data.name + " Event Started!");
+        }
+
+        function endEvent() {
+            if (!game.event.active) return;
+            document.body.className = game.event.originalTheme || 'theme-default'; 
+            game.event.active = false;
+            game.event.multiplier = 1;
+            
+            // Hide HUD
+            document.getElementById('event-hud').classList.remove('active');
+            
+            stopParticles();
+            updateMusicState();
+            notify("Event Ended.");
+            game.eventTimer = 0; 
+        }
+
+        function startParticles(opts) {
+            stopParticles();
+            const overlay = document.getElementById('particle-overlay');
+            const styleSheet = document.styleSheets[0];
+            const kfName = `fall-${opts.shape.charCodeAt(0)}`;
+            let ruleExists = Array.from(styleSheet.cssRules).some(r => r.name === kfName);
+            if (!ruleExists) {
+                styleSheet.insertRule(`@keyframes ${kfName} { 0% { transform: translateY(-100px) rotate(0deg); } 100% { transform: translateY(100vh) rotate(360deg); } }`, styleSheet.cssRules.length);
+            }
+            for(let i=0; i<opts.count; i++) {
+                const p = document.createElement('div');
+                p.innerText = opts.shape;
+                p.style.position = 'absolute';
+                p.style.color = opts.color;
+                p.style.fontSize = opts.size + 'px';
+                p.style.left = Math.random()*100 + 'vw';
+                p.style.top = Math.random()*-100 + 'px';
+                p.style.animation = `${kfName} ${5+Math.random()*5}s linear infinite`;
+                overlay.appendChild(p);
+            }
+        }
+        function stopParticles() { document.getElementById('particle-overlay').innerHTML = ''; }
+
+        /* --- THEMES & EXTRAS --- */
+        function renderThemes() {
+            const grid = document.getElementById('theme-grid');
+            grid.innerHTML = '';
+            themes.forEach(t => {
+                const unlocked = game.themesUnlocked.includes(t.id);
+                const d = document.createElement('div');
+                d.className = `theme-item ${unlocked?'':'locked'} ${game.currentTheme===t.id?'active-theme':''}`;
+                d.style.background = t.color;
+                d.innerText = t.name + (unlocked ? '' : `\n(${t.cost}💎)`);
+                d.onclick = () => {
+                    if(unlocked) { document.body.className = t.id; game.currentTheme = t.id; renderThemes(); }
+                    else if(game.shards >= t.cost) { game.shards -= t.cost; game.themesUnlocked.push(t.id); renderThemes(); updateDisplay(); }
+                };
+                grid.appendChild(d);
+            });
+        }
+        function toggleSetting(s) { 
+            game.settings[s] = document.getElementById(`toggle-${s}`).checked; 
+            if(s==='music') updateMusicState();
+        }
+        function activateFrenzy() {
+            if(game.cooldowns.frenzy === 0) { game.cooldowns.frenzy = 30; playSkillSound(); }
+        }
+        function spawnGoldenPlanet() {
+            const p = document.createElement('div');
+            p.className = 'golden-planet';
+            p.style.left = Math.random() * (window.innerWidth - 60) + 'px';
+            p.style.top = Math.random() * (window.innerHeight - 200) + 100 + 'px';
+            p.onclick = () => {
+                game.clicks += calculateClickPower() * 1000;
+                game.shards += 0.1;
+                playSkillSound();
+                p.remove();
+                notify("Golden Planet Found!");
+            };
+            document.getElementById('game-area').appendChild(p);
+            setTimeout(() => { if(p.parentNode) p.remove(); }, 15000);
+        }
+
+        /* --- GAME LOOPS --- */
+        setInterval(() => {
+            game.clicks += calculateCPS();
+            
+            if(game.event.active) {
+                const remaining = Math.max(0, (game.event.endTime - Date.now()) / 1000);
+                document.getElementById('hud-time').innerText = formatTime(remaining);
+                if(remaining <= 0) endEvent();
+            } else {
+                game.eventTimer++;
+                if(game.eventTimer >= 600) startEvent(Object.keys(eventData)[Math.floor(Math.random()*2)]);
+            }
+
+            if(game.cooldowns.frenzy > 0) {
+                game.cooldowns.frenzy--;
+                if(game.cooldowns.frenzy === 0) game.cooldowns.frenzy = -300;
+            } else if (game.cooldowns.frenzy < 0) {
+                game.cooldowns.frenzy++;
+            }
+
+            if(Math.random() < 0.01 && !document.querySelector('.golden-planet')) spawnGoldenPlanet();
+            updateDisplay();
+        }, 1000);
+
+        /* --- ADMIN --- */
+        function openAdminModal() { document.getElementById('admin-modal').style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function checkAdmin() {
+            if(document.getElementById('admin-pass').value === 'Geforce13!') {
+                document.getElementById('admin-login').style.display = 'none';
+                document.getElementById('admin-controls').style.display = 'block';
+            }
+        }
+        function adminRunEvent() { startEvent(document.getElementById('admin-event-select').value); closeModal('admin-modal'); }
+        function adminGen(t) { 
+            const val = parseInt(document.getElementById('admin-gen-val').value);
+            if(t==='clicks') game.clicks += val;
+            if(t==='shards') game.shards += val;
+            updateDisplay();
+        }
+        function hardReset() { localStorage.removeItem('cosmicClickerSave'); location.reload(); }
+
+        /* --- SAVE/LOAD --- */
+        function saveGame() { localStorage.setItem('cosmicClickerSave', JSON.stringify(game)); }
+        function loadGame() {
+            const s = localStorage.getItem('cosmicClickerSave');
+            if(s) {
+                const p = JSON.parse(s);
+                game = { ...defaultState, ...p };
+                game.event = { ...defaultState.event, ...(p.event||{}) };
+                if(game.event.active) {
+                    const rem = game.event.endTime - Date.now();
+                    if(rem > 0) {
+                        const d = eventData[game.event.name.toLowerCase().replace(/\s/g, '-')];
+                        document.body.className = d.theme;
+                        document.getElementById('event-hud').classList.add('active');
+                        document.getElementById('hud-name').innerText = d.name;
+                        document.getElementById('hud-mult').innerText = d.mult + 'X';
+                        startParticles(d.particles);
+                    } else endEvent();
+                }
+            }
+            document.body.className = game.currentTheme;
+            document.getElementById('toggle-sfx').checked = game.settings.sfx;
+            document.getElementById('toggle-music').checked = game.settings.music;
+            renderThemes();
+            updateDisplay();
+            updateMusicState();
+        }
+
+        window.onload = loadGame;
+        setInterval(saveGame, 30000);
+    </script>
+</body>
+</html>
