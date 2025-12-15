@@ -219,7 +219,6 @@
         }
 
         .skill-btn {
-            /* Inheriting base btn-buy style */
             padding: 8px 15px;
             background: var(--primary); 
             border: none;
@@ -308,7 +307,94 @@
             border: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* --- MODAL/ADMIN STYLES (FIXED: Improved Admin Layout) --- */
+        /* Slots */
+        #slots {
+            display: flex; justify-content: center; gap: 5px;
+            margin-bottom: 15px; font-size: 2.5rem; font-weight: bold;
+            height: 60px; overflow: hidden;
+        }
+        .slot-reel {
+            width: 60px; background: #0f172a;
+            border: 2px solid var(--secondary);
+            border-radius: 5px;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* Memory */
+        #memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin: 10px auto;
+            max-width: 300px;
+        }
+        .memory-card {
+            width: 100%;
+            padding-top: 100%; /* Makes cards square */
+            position: relative;
+            background: #475569;
+            border-radius: 5px;
+            color: white;
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .memory-card.flipped { background: var(--primary); }
+        .memory-card.matched { background: var(--green); color: #000; }
+        .memory-card > * { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+        /* Space Dash */
+        #space-dash-area {
+            width: 90%;
+            max-width: 400px;
+            height: 150px;
+            background: #1e3a8a; /* Deep Space Blue */
+            border: 3px solid var(--primary);
+            border-radius: 8px;
+            margin: 10px auto;
+            position: relative;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        #dash-player {
+            position: absolute;
+            bottom: 10px;
+            left: 20px;
+            width: 25px;
+            height: 25px;
+            background: var(--green);
+            border: 2px solid white;
+            border-radius: 4px;
+            z-index: 10;
+            transition: transform 0.15s ease-out; /* For jumping */
+        }
+        
+        #dash-ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 10px;
+            background: #475569; /* Slate 600 */
+            z-index: 5;
+        }
+
+        .dash-obstacle {
+            position: absolute;
+            bottom: 10px;
+            width: 15px;
+            height: 30px;
+            background: var(--danger);
+            border: 2px solid #fff;
+            clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
+            z-index: 8;
+        }
+
+        /* --- MODAL/ADMIN STYLES (Fixed) --- */
         .modal {
             position: fixed;
             z-index: 6000;
@@ -635,7 +721,7 @@
             shardUpgrades: { extraShard: 0, startBonus: false }, settings: { sfx: true, music: false },
             event: { active: false, name: null, multiplier: 1, duration: 0, endTime: 0, particles: null, originalTheme: 'theme-default' },
             cooldowns: { frenzy: 0, frenzyMax: 300, frenzyDuration: 30 }, 
-            eventTimer: 0 // FIXED: Initialize to 0 so event doesn't start immediately
+            eventTimer: 0 
         };
         const defaultLeaderboard = { clicks: 0, shards: 0, rebirths: 0, dash: 0 };
         let leaderboard = JSON.parse(JSON.stringify(defaultLeaderboard));
@@ -664,10 +750,10 @@
         let musicTimer = null;
         let noteIndex = 0;
         let currentMusicType = 'none';
-        let isDashPlaying = false; // Used to track music state alongside event
+        let isDashPlaying = false; 
 
         function playTone(freq, type, duration, vol = 0.1) {
-            if (!game.settings.sfx && !freq) return; // Allow music tones if music is on, prevent sfx if off
+            if (!game.settings.sfx && !freq) return; 
             if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -723,7 +809,6 @@
             noteIndex++;
         }
         
-        // FIXED: This function now correctly checks and switches the music state
         function updateMusicState() {
             if (!game.settings.music) {
                 if (musicTimer) clearInterval(musicTimer);
@@ -852,17 +937,180 @@
             }
             
             // Admin Panel Auto Clicker display
-            document.getElementById('admin-auto-0').innerText = game.autoClickers[0];
-            document.getElementById('admin-auto-1').innerText = game.autoClickers[1];
-            document.getElementById('admin-auto-2').innerText = game.autoClickers[2];
+            if (document.getElementById('admin-auto-0')) document.getElementById('admin-auto-0').innerText = game.autoClickers[0];
+            if (document.getElementById('admin-auto-1')) document.getElementById('admin-auto-1').innerText = game.autoClickers[1];
+            if (document.getElementById('admin-auto-2')) document.getElementById('admin-auto-2').innerText = game.autoClickers[2];
             
-            // Leaderboard check and update
             checkLeaderboard();
         }
 
-        /* --- MINIGAMES (Functions kept brief for brevity, assuming implementation is correct) --- */
-        // Slot functions (playSlots, finalizeSlots, checkSlotWin) here...
-        // Memory functions (startMemoryGame, flipCard, checkForMatch) here...
+        /* --- MINI-GAMES LOGIC (FULLY IMPLEMENTED) --- */
+        
+        // --- 1. SLOTS ---
+        const slotSymbols = ['🚀', '👽', '🪐', '⭐️', '☄️'];
+        let isSpinning = false;
+
+        function playSlots() {
+            if (isSpinning) return;
+            const cost = 1000;
+            if (game.clicks < cost) { notify("Not enough clicks!"); return; }
+            
+            game.clicks -= cost;
+            updateDisplay();
+            isSpinning = true;
+            document.getElementById('slot-btn').disabled = true;
+            document.getElementById('slot-msg').innerText = "Spinning...";
+
+            const r1 = document.getElementById('reel-1');
+            const r2 = document.getElementById('reel-2');
+            const r3 = document.getElementById('reel-3');
+            
+            let spins = 0;
+            const interval = setInterval(() => {
+                r1.innerText = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+                r2.innerText = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+                r3.innerText = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+                playTone(300, 'square', 0.05, 0.05); // Spin sound
+                spins++;
+                if(spins > 20) {
+                    clearInterval(interval);
+                    finalizeSlots();
+                }
+            }, 100);
+        }
+
+        function finalizeSlots() {
+            const r1 = document.getElementById('reel-1');
+            const r2 = document.getElementById('reel-2');
+            const r3 = document.getElementById('reel-3');
+            
+            const v1 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+            const v2 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+            const v3 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+            
+            // Staggered stop effect
+            setTimeout(() => { r1.innerText = v1; playTone(500, 'sine', 0.1); }, 0);
+            setTimeout(() => { r2.innerText = v2; playTone(500, 'sine', 0.1); }, 300);
+            setTimeout(() => { 
+                r3.innerText = v3; 
+                playTone(500, 'sine', 0.1); 
+                checkSlotWin(v1, v2, v3);
+            }, 600);
+        }
+
+        function checkSlotWin(v1, v2, v3) {
+            isSpinning = false;
+            document.getElementById('slot-btn').disabled = false;
+            
+            if (v1 === v2 && v2 === v3) {
+                const reward = calculateClickPower() * 500;
+                game.clicks += reward;
+                game.shards += 1;
+                document.getElementById('slot-msg').innerText = `JACKPOT! +${formatNum(reward)} Clicks & 1💎`;
+                document.getElementById('slot-msg').style.color = 'var(--green)';
+                playSkillSound();
+            } else if (v1 === v2 || v2 === v3 || v1 === v3) {
+                const reward = calculateClickPower() * 50;
+                game.clicks += reward;
+                document.getElementById('slot-msg').innerText = `Mini Win! +${formatNum(reward)} Clicks`;
+                document.getElementById('slot-msg').style.color = '#fff';
+            } else {
+                document.getElementById('slot-msg').innerText = "Try again!";
+                document.getElementById('slot-msg').style.color = 'var(--grey)';
+            }
+            updateDisplay();
+        }
+
+        // --- 2. MEMORY MATRIX ---
+        const memoryIcons = ['👽', '👾', '🤖', '🎃', '💀', '👻', '🐲', '👹'];
+        let memoryGrid = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let isMemoryLocked = false;
+
+        function startMemoryGame() {
+            const cost = 500;
+            if (document.getElementById('memory-btn').innerText === "Playing...") return;
+            if (game.clicks < cost) { notify("Not enough clicks!"); return; }
+
+            game.clicks -= cost;
+            updateDisplay();
+            
+            // Setup Board
+            const gridEl = document.getElementById('memory-grid');
+            gridEl.innerHTML = '';
+            flippedCards = [];
+            matchedPairs = 0;
+            isMemoryLocked = false;
+            document.getElementById('memory-btn').innerText = "Playing...";
+            document.getElementById('memory-btn').disabled = true;
+
+            // Create pairs
+            let deck = [...memoryIcons, ...memoryIcons];
+            deck.sort(() => Math.random() - 0.5);
+
+            deck.forEach((icon, index) => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.dataset.icon = icon;
+                card.dataset.index = index;
+                const innerText = document.createElement('span');
+                innerText.innerText = '?';
+                card.appendChild(innerText);
+                card.onclick = () => flipCard(card);
+                gridEl.appendChild(card);
+            });
+        }
+
+        function flipCard(card) {
+            if (isMemoryLocked) return;
+            if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+            // Flip
+            card.classList.add('flipped');
+            card.querySelector('span').innerText = card.dataset.icon;
+            flippedCards.push(card);
+            playTone(600, 'sine', 0.1);
+
+            if (flippedCards.length === 2) {
+                isMemoryLocked = true;
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            const [c1, c2] = flippedCards;
+            if (c1.dataset.icon === c2.dataset.icon) {
+                // Match
+                playTone(800, 'square', 0.1);
+                c1.classList.add('matched');
+                c2.classList.add('matched');
+                c1.querySelector('span').innerText = c1.dataset.icon; // Ensure matched state shows icon
+                c2.querySelector('span').innerText = c2.dataset.icon;
+                matchedPairs++;
+                flippedCards = [];
+                isMemoryLocked = false;
+                
+                if (matchedPairs === 8) {
+                    const reward = calculateClickPower() * 800;
+                    notify(`HACK COMPLETE! +${formatNum(reward)} Clicks`);
+                    game.clicks += reward;
+                    updateDisplay();
+                    document.getElementById('memory-btn').innerText = "Start Hack";
+                    document.getElementById('memory-btn').disabled = false;
+                }
+            } else {
+                // No Match
+                setTimeout(() => {
+                    c1.classList.remove('flipped');
+                    c1.querySelector('span').innerText = '?';
+                    c2.classList.remove('flipped');
+                    c2.querySelector('span').innerText = '?';
+                    flippedCards = [];
+                    isMemoryLocked = false;
+                }, 800);
+            }
+        }
         
         // --- 3. SPACE DASH ---
         let playerY = 10; 
@@ -877,6 +1125,8 @@
         const dashArea = document.getElementById('space-dash-area');
         const dashPlayer = document.getElementById('dash-player');
         const dashButton = document.getElementById('dash-btn');
+        const dashGround = document.getElementById('dash-ground');
+        const dashScoreEl = document.getElementById('dash-score');
 
         function startDashGame() {
             if (isDashPlaying) return;
@@ -888,17 +1138,90 @@
             obstacleSpeed = 2;
             dashPlayer.style.transform = 'translateY(0px)';
             
+            // Re-append elements to ensure they are available after panel switch
             dashArea.innerHTML = '';
             dashArea.appendChild(dashPlayer);
-            dashArea.appendChild(document.getElementById('dash-ground'));
-            dashArea.appendChild(document.getElementById('dash-score'));
-            document.getElementById('dash-score').innerText = 'Score: 0';
+            dashArea.appendChild(dashGround);
+            dashArea.appendChild(dashScoreEl);
+            dashScoreEl.innerText = 'Score: 0';
+
             dashButton.innerText = "Playing...";
             dashButton.disabled = true;
-            updateMusicState(); // Update music to 'action'
+            updateMusicState(); 
 
             dashInterval = setInterval(gameLoopDash, 20); 
             obstacleInterval = setInterval(spawnObstacle, 1500); 
+        }
+
+        function handleDashJump() {
+            if (!isDashPlaying) return;
+            if (playerY <= 10) { 
+                velocityY = jumpVelocity;
+                playTone(900, 'square', 0.1); 
+            }
+        }
+
+        function spawnObstacle() {
+            if (!isDashPlaying) return;
+            const obs = document.createElement('div');
+            obs.className = 'dash-obstacle';
+            obs.style.right = '-20px';
+            dashArea.appendChild(obs);
+        }
+
+        function updateObstacles() {
+            const obstacles = dashArea.querySelectorAll('.dash-obstacle');
+            const playerRect = dashPlayer.getBoundingClientRect();
+            const areaRect = dashArea.getBoundingClientRect();
+            
+            obstacleSpeed = 2 + Math.floor(dashScore / 50) * 0.5; 
+
+            for (let i = 0; i < obstacles.length; i++) {
+                let obs = obstacles[i];
+                let currentRight = parseFloat(obs.style.right);
+                obs.style.right = (currentRight + obstacleSpeed) + 'px';
+
+                // Get dynamic position for collision check
+                const obsCurrentX = areaRect.width - (currentRight + obstacleSpeed) - obs.offsetWidth;
+                const playerCurrentX = 20; // Player is fixed at 20px left
+
+                // Check for collision (X-overlap and Y-overlap)
+                const isOverlappingX = (playerCurrentX + dashPlayer.offsetWidth) > obsCurrentX && playerCurrentX < (obsCurrentX + obs.offsetWidth);
+                const isCollidingY = playerY <= (obs.offsetHeight + 10); // 10 is the height of dash-ground
+
+                if (isOverlappingX && isCollidingY) {
+                    endDashGame(false);
+                    return; 
+                }
+
+                // Obstacle passed
+                if (currentRight > areaRect.width) {
+                    obs.remove();
+                    dashScore++;
+                    dashScoreEl.innerText = 'Score: ' + dashScore;
+                }
+            }
+        }
+
+        function gameLoopDash() {
+            if (!isDashPlaying) return;
+
+            // Apply gravity/jump
+            velocityY -= gravity;
+            playerY += velocityY;
+            
+            if (playerY < 10) {
+                playerY = 10;
+                velocityY = 0;
+            }
+            
+            dashPlayer.style.transform = `translateY(-${playerY - 10}px)`;
+
+            updateObstacles();
+
+            if (dashScore >= 100) {
+                endDashGame(true);
+            }
         }
 
         function endDashGame(won) {
@@ -925,10 +1248,8 @@
             
             updateDisplay();
             dashArea.querySelectorAll('.dash-obstacle').forEach(obs => obs.remove());
-            updateMusicState(); // FIXED: Revert music state after game ends
+            updateMusicState(); 
         }
-
-        // (Other dash functions: handleDashJump, spawnObstacle, updateObstacles, gameLoopDash assumed to be here)
 
         /* --- LEADERBOARD --- */
         function checkLeaderboard() {
@@ -957,12 +1278,56 @@
         }
 
 
-        /* --- SHOP ACTIONS (Assumed correct) --- */
-        function buyClickUpgrade() { /* ... */ }
-        function buyAuto(index) { /* ... */ }
-        function buyShardUpgrade(type) { /* ... */ }
-        function doRebirth() { /* ... */ }
-
+        /* --- SHOP ACTIONS --- */
+        function buyClickUpgrade() {
+            if (game.clicks >= game.clickCost) {
+                game.clicks -= game.clickCost;
+                game.clickMultiplier *= 2;
+                game.clickCost = Math.floor(game.clickCost * 2);
+                updateDisplay();
+            } else { notify("Not enough clicks to buy Cosmic Ray!"); }
+        }
+        function buyAuto(index) {
+            const cost = Math.floor((index === 0 ? 100 : index === 1 ? 500 : 2000) * Math.pow(1.1, game.autoClickers[index]));
+            if (game.clicks >= cost) {
+                game.clicks -= cost;
+                game.autoClickers[index]++;
+                updateDisplay();
+            } else { notify("Not enough clicks to buy auto clicker!"); }
+        }
+        function buyShardUpgrade(type) {
+            const cost = (type === 'extraShard') ? 5 : 10;
+            if (game.shards >= cost) {
+                game.shards -= cost;
+                if (type === 'extraShard') { 
+                    game.shardUpgrades.extraShard++; 
+                    document.getElementById('btn-shard-extraShard').innerText = `Buy (5💎)`;
+                }
+                else if (type === 'startBonus') { game.shardUpgrades.startBonus = true; }
+                updateDisplay();
+                document.getElementById('extraShardCount').innerText = game.shardUpgrades.extraShard;
+                document.getElementById('startBonusStatus').innerText = game.shardUpgrades.startBonus ? 'Unlocked' : 'Locked';
+            } else { notify("Not enough shards for this upgrade!"); }
+        }
+        function doRebirth() {
+            let gain = Math.floor(game.clicks / 2000);
+            if(gain > 0) gain += game.shardUpgrades.extraShard;
+            
+            if (gain > 0) {
+                if (!confirm(`Are you sure you want to Rebirth? You will gain ${gain} 💎 shards.`)) return;
+                
+                game.shards += gain;
+                game.rebirths++;
+                const keep = { shards: game.shards, rebirths: game.rebirths, themesUnlocked: game.themesUnlocked, currentTheme: game.currentTheme, shardUpgrades: game.shardUpgrades, settings: game.settings };
+                game = { ...defaultState, ...keep };
+                if (game.shardUpgrades.startBonus) game.clicks = 500;
+                endEvent();
+                notify(`Rebirth successful! Gained ${gain} 💎.`);
+                updateDisplay();
+            } else {
+                 notify("Need at least 2,000 Clicks to gain 1 Shard.");
+            }
+        }
 
         /* --- EVENT SYSTEM --- */
         const eventData = {
@@ -971,7 +1336,7 @@
         };
 
         function startEvent(key) {
-            if (game.event.active) return;
+            if (game.event.active || key === 'none') return;
             const data = eventData[key];
             game.event.active = true;
             game.event.name = data.name;
@@ -1000,35 +1365,116 @@
             document.getElementById('event-hud').classList.remove('active');
             stopParticles();
             
-            game.eventTimer = 0; // Reset event timer
-            updateMusicState(); // FIXED: Revert music state after event ends
+            game.eventTimer = 0; 
+            updateMusicState(); 
             notify("Event Ended.");
         }
 
-        function startParticles(opts) { /* ... */ }
-        function stopParticles() { /* ... */ }
+        function startParticles(opts) {
+            stopParticles();
+            const overlay = document.getElementById('particle-overlay');
+            const styleSheet = document.styleSheets[0];
+            const kfName = `fall-${opts.shape.charCodeAt(0)}`;
+            let ruleExists = Array.from(styleSheet.cssRules).some(r => r.name === kfName);
+            if (!ruleExists) {
+                // Simplified keyframe injection (only works if CSS rule count is under browser limit)
+                const keyframes = `@keyframes ${kfName} { 0% { transform: translateY(-100px) rotate(0deg); } 100% { transform: translateY(100vh) rotate(360deg); } }`;
+                try {
+                    styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
+                } catch(e) { /* Ignore error if rule already exists or browser limit reached */ }
+            }
+            for(let i=0; i<opts.count; i++) {
+                const p = document.createElement('div');
+                p.innerText = opts.shape;
+                p.style.position = 'absolute';
+                p.style.color = opts.color;
+                p.style.fontSize = opts.size + 'px';
+                p.style.left = Math.random()*100 + 'vw';
+                p.style.top = Math.random()*-100 + 'px';
+                p.style.animation = `${kfName} ${5+Math.random()*5}s linear infinite`;
+                overlay.appendChild(p);
+            }
+        }
+        function stopParticles() { document.getElementById('particle-overlay').innerHTML = ''; }
 
-
-        /* --- THEMES & EXTRAS (Assumed correct) --- */
-        function renderThemes() { /* ... */ }
-        function toggleSetting(s) { /* ... */ }
-        function activateFrenzy() { /* ... */ }
-        function spawnGoldenPlanet() { /* ... */ }
-
+        /* --- THEMES & EXTRAS --- */
+        function renderThemes() {
+            const grid = document.getElementById('theme-grid');
+            grid.innerHTML = '';
+            themes.forEach(t => {
+                const unlocked = game.themesUnlocked.includes(t.id);
+                const d = document.createElement('div');
+                d.className = `theme-item ${unlocked?'':'locked'} ${game.currentTheme===t.id?'active-theme':''}`;
+                d.style.background = t.color;
+                d.innerText = t.name + (unlocked ? '' : `\n(${t.cost}💎)`);
+                d.onclick = () => {
+                    if(unlocked) { document.body.className = t.id; game.currentTheme = t.id; renderThemes(); }
+                    else if(game.shards >= t.cost) { 
+                        game.shards -= t.cost; 
+                        game.themesUnlocked.push(t.id); 
+                        document.body.className = t.id; 
+                        game.currentTheme = t.id; 
+                        renderThemes(); 
+                        updateDisplay(); 
+                    } else { notify("Not enough shards to unlock theme!"); }
+                };
+                grid.appendChild(d);
+            });
+        }
+        function toggleSetting(s) { 
+            game.settings[s] = document.getElementById(`toggle-${s}`).checked; 
+            if(s==='music') updateMusicState();
+        }
+        function activateFrenzy() {
+            if(game.cooldowns.frenzy === 0) { 
+                game.cooldowns.frenzy = 30; 
+                playSkillSound(); 
+                notify("Frenzy Activated! (2x Boost)");
+                updateDisplay();
+            }
+        }
+        function spawnGoldenPlanet() {
+            const p = document.createElement('div');
+            p.className = 'golden-planet';
+            p.style.position = 'absolute';
+            p.style.background = 'radial-gradient(circle, #ffd700, #ff8c00)';
+            p.style.width = '40px';
+            p.style.height = '40px';
+            p.style.borderRadius = '50%';
+            p.style.boxShadow = '0 0 10px #ffd700';
+            p.style.cursor = 'pointer';
+            p.style.left = Math.random() * (window.innerWidth - 60) + 'px';
+            p.style.top = Math.random() * (window.innerHeight - 200) + 100 + 'px';
+            p.style.zIndex = '50';
+            p.onclick = () => {
+                game.clicks += calculateClickPower() * 1000;
+                game.shards += 1;
+                playSkillSound();
+                p.remove();
+                notify("Golden Planet Found! +1000x Tap & 1💎");
+                updateDisplay();
+            };
+            document.getElementById('game-area').appendChild(p);
+            setTimeout(() => { if(p.parentNode) p.remove(); }, 15000);
+        }
 
         /* --- GAME LOOPS --- */
         setInterval(() => {
-            game.clicks += calculateCPS();
+            if (document.getElementById('main-menu-overlay').style.display === 'none') {
+                game.clicks += calculateCPS();
+            }
             
             if(game.event.active) {
-                const remaining = Math.max(0, (game.event.endTime - Date.now()) / 1000);
+                const remaining = Math.max(0, Math.floor((game.event.endTime - Date.now()) / 1000));
                 document.getElementById('hud-time').innerText = formatTime(remaining);
                 if(remaining <= 0) endEvent();
             } else {
                 game.eventTimer++;
                 // Check for event trigger only if event is not active and game is running
                 if(game.eventTimer >= 600 && document.getElementById('main-menu-overlay').style.display === 'none') { 
-                    startEvent(Object.keys(eventData)[Math.floor(Math.random()*2)]);
+                    // Randomly select one of the two defined events
+                    const eventKeys = Object.keys(eventData).filter(k => k !== 'none');
+                    startEvent(eventKeys[Math.floor(Math.random() * eventKeys.length)]);
                 }
             }
 
@@ -1039,14 +1485,15 @@
                 game.cooldowns.frenzy++;
             }
 
-            if(Math.random() < 0.01 && !document.querySelector('.golden-planet')) spawnGoldenPlanet();
+            if(Math.random() < 0.01 && !document.querySelector('.golden-planet') && document.getElementById('main-menu-overlay').style.display === 'none') {
+                spawnGoldenPlanet();
+            }
             updateDisplay();
         }, 1000);
 
-        /* --- ADMIN (FIXED: Added CPS control) --- */
+        /* --- ADMIN --- */
         function openAdminModal() { 
             document.getElementById('admin-modal').style.display = 'flex'; 
-            // Update admin display with current autoclicker counts on open
             document.getElementById('admin-auto-0').innerText = game.autoClickers[0];
             document.getElementById('admin-auto-1').innerText = game.autoClickers[1];
             document.getElementById('admin-auto-2').innerText = game.autoClickers[2];
@@ -1064,11 +1511,11 @@
         function adminRunEvent() { startEvent(document.getElementById('admin-event-select').value); closeModal('admin-modal'); }
         function adminGen(t) { 
             const val = parseInt(document.getElementById('admin-gen-val').value);
+            if(isNaN(val)) { notify("Invalid amount."); return; }
             if(t==='clicks') game.clicks += val;
             if(t==='shards') game.shards += val;
             updateDisplay();
         }
-        // NEW FUNCTION: Change Auto Clickers from Admin Panel
         function adminAuto(index, change) {
             if (game.autoClickers[index] + change >= 0) {
                 game.autoClickers[index] += change;
@@ -1089,18 +1536,67 @@
                 renderThemes();
                 renderLeaderboard();
                 openMainMenu();
+                window.location.reload(); 
             }
         }
 
-        /* --- SAVE/LOAD (Assumed correct) --- */
-        function saveLeaderboard() { /* ... */ }
-        function loadLeaderboard() { /* ... */ }
-        function saveGame() { /* ... */ }
+        /* --- SAVE/LOAD --- */
+        function saveLeaderboard() { localStorage.setItem('cosmicClickerLeaderboard', JSON.stringify(leaderboard)); }
+        function loadLeaderboard() {
+            const s = localStorage.getItem('cosmicClickerLeaderboard');
+            if(s) leaderboard = { ...defaultLeaderboard, ...JSON.parse(s) };
+        }
+
+        function saveGame() { 
+            localStorage.setItem('cosmicClickerSave', JSON.stringify(game)); 
+            saveLeaderboard();
+        }
         
         function loadGame() {
-            // ... (loading logic) ...
+            loadLeaderboard();
+
+            const s = localStorage.getItem('cosmicClickerSave');
+            if(s) {
+                const p = JSON.parse(s);
+                // Merge loaded state with default state to handle new properties
+                game = { ...defaultState, ...p };
+                game.shardUpgrades = { ...defaultState.shardUpgrades, ...(p.shardUpgrades || {}) };
+                game.settings = { ...defaultState.settings, ...(p.settings || {}) };
+                game.event = { ...defaultState.event, ...(p.event||{}) };
+                
+                // Event check on load
+                if(game.event.active) {
+                    const rem = game.event.endTime - Date.now();
+                    if(rem > 0) {
+                        const eventKey = game.event.name ? game.event.name.toLowerCase().replace(/\s/g, '-') : null;
+                        const d = eventData[eventKey];
+                        if (d) {
+                            document.body.className = d.theme;
+                            document.getElementById('event-hud').classList.add('active');
+                            document.getElementById('hud-name').innerText = d.name;
+                            document.getElementById('hud-mult').innerText = d.mult + 'X';
+                            startParticles(d.particles);
+                        } else {
+                            endEvent(); // Invalid event data
+                        }
+                    } else endEvent();
+                } else {
+                    // Important: Ensure the body class is set correctly even if no event is active
+                    document.body.className = game.currentTheme;
+                }
+            }
+            
+            document.getElementById('toggle-sfx').checked = game.settings.sfx;
+            document.getElementById('toggle-music').checked = game.settings.music;
+            renderThemes();
+            renderLeaderboard();
             updateDisplay();
             updateMusicState();
+            
+            // Set initial button states for shard upgrades
+            document.getElementById('extraShardCount').innerText = game.shardUpgrades.extraShard;
+            document.getElementById('startBonusStatus').innerText = game.shardUpgrades.startBonus ? 'Unlocked' : 'Locked';
+
             openMainMenu();
         }
 
@@ -1108,4 +1604,4 @@
         setInterval(saveGame, 30000);
     </script>
 </body>
-                    </html>
+</html>
