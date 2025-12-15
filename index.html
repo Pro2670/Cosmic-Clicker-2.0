@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cosmic Clickers - Menu Update</title>
+    <title>Cosmic Clickers - Minigame Update</title>
     <style>
         /* --- CSS VARIABLES & BASE --- */
         :root {
@@ -52,7 +52,7 @@
         body.event-candy-sage { background: linear-gradient(135deg, #fbcfe8, #a5b4fc); }
         body.event-grassland-joy { background: linear-gradient(135deg, #4ade80, #78350f); }
 
-        /* --- MAIN MENU (NEW) --- */
+        /* --- MAIN MENU --- */
         #main-menu-overlay {
             position: fixed;
             top: 0; left: 0;
@@ -107,7 +107,7 @@
             font-size: 0.9rem;
         }
 
-        /* --- TOP LEFT MENU BUTTON (NEW) --- */
+        /* --- TOP LEFT MENU BUTTON --- */
         #top-menu-btn {
             position: absolute;
             top: 15px;
@@ -127,10 +127,10 @@
         header {
             width: 100%;
             padding: 15px;
-            padding-left: 100px; /* Space for menu button */
+            padding-left: 100px;
             background: rgba(0,0,0,0.5);
             display: flex;
-            justify-content: flex-end; /* Align right to accommodate menu btn */
+            justify-content: flex-end;
             align-items: center;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             z-index: 10;
@@ -386,7 +386,7 @@
         
         #particle-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
 
-        /* MINI-GAMES */
+        /* --- MINI-GAMES --- */
         .mini-game-container {
             padding: 15px;
             background: rgba(255,255,255,0.05);
@@ -395,16 +395,51 @@
             text-align: center;
             border: 1px solid rgba(255,255,255,0.1);
         }
+
+        /* Slots */
         #slots {
             display: flex; justify-content: center; gap: 5px;
             margin-bottom: 15px; font-size: 2.5rem; font-weight: bold;
-            height: 50px; overflow: hidden;
+            height: 60px; overflow: hidden;
         }
         .slot-reel {
             width: 60px; background: #0f172a;
             border: 2px solid var(--secondary);
             border-radius: 5px;
             display: flex; justify-content: center; align-items: center;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* Memory Matrix */
+        #memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-bottom: 15px;
+            perspective: 1000px;
+        }
+        .memory-card {
+            background: var(--secondary);
+            height: 50px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            transform: scale(1);
+            transition: transform 0.2s, background 0.3s;
+            user-select: none;
+        }
+        .memory-card.flipped {
+            background: var(--bg-color);
+            border: 1px solid var(--primary);
+            cursor: default;
+        }
+        .memory-card.matched {
+            background: var(--green);
+            opacity: 0.5;
+            cursor: default;
         }
 
         @media (max-width: 600px) {
@@ -426,7 +461,7 @@
             Total Rebirths: <span id="menu-rebirths">0</span> ♻️
         </div>
         <button class="menu-play-btn" onclick="startGame()">PLAY</button>
-        <div style="margin-top:20px; font-size:0.8rem; color:#94a3b8">v3.0 - Menu Update</div>
+        <div style="margin-top:20px; font-size:0.8rem; color:#94a3b8">v3.5 - Minigames</div>
     </div>
 
     <button id="top-menu-btn" onclick="openMainMenu()">☰ MENU</button>
@@ -506,19 +541,25 @@
         </div>
 
         <div id="panel-minigames" class="panel">
+            
             <div class="mini-game-container">
-                <h3>Slot Machine</h3>
-                <p style="font-size:0.8rem">Cost: 1000 Clicks. Win Chance: 20%</p>
+                <h3>Cosmic Slots</h3>
+                <p style="font-size:0.8rem">Match 3 symbols to win big! (Cost: 1000 Clicks)</p>
                 <div id="slots">
-                    <div class="slot-reel" id="reel-1">?</div>
-                    <div class="slot-reel" id="reel-2">?</div>
-                    <div class="slot-reel" id="reel-3">?</div>
+                    <div class="slot-reel" id="reel-1">🚀</div>
+                    <div class="slot-reel" id="reel-2">🚀</div>
+                    <div class="slot-reel" id="reel-3">🚀</div>
                 </div>
-                <button class="btn-buy" style="width:100%" id="slot-btn" onclick="playSlots()">Spin! (1000 Clicks)</button>
+                <button class="btn-buy" style="width:100%" id="slot-btn" onclick="playSlots()">Spin!</button>
+                <div id="slot-msg" style="margin-top:5px; height:20px; font-size:0.9rem;"></div>
             </div>
+
             <div class="mini-game-container">
-                <h3>Growing Garden (WIP)</h3>
-                <button class="btn-buy" disabled style="width:100%">Coming Soon</button>
+                <h3>Memory Matrix</h3>
+                <p style="font-size:0.8rem">Match the alien pairs! (Cost: 500 Clicks)</p>
+                <div id="memory-grid">
+                    </div>
+                <button class="btn-buy" style="width:100%" id="memory-btn" onclick="startMemoryGame()">Start Hack</button>
             </div>
         </div>
 
@@ -679,23 +720,22 @@
 
         function musicLoop() {
             if (!game.settings.music) return;
-            // Only play if menu is NOT visible
             if (document.getElementById('main-menu-overlay').style.display !== 'none') return;
 
             if (currentMusicType === 'action') {
                 const beat = noteIndex % 16;
-                if (beat === 0) playTone(98.00, 'sawtooth', 0.4, 0.15); // G2
-                if (beat === 3) playTone(98.00, 'sawtooth', 0.4, 0.15); // G2
-                if (beat === 6) playTone(116.54, 'square', 0.2, 0.1);  // Bb2
-                if (beat === 8) playTone(130.81, 'square', 0.2, 0.1);  // C3
+                if (beat === 0) playTone(98.00, 'sawtooth', 0.4, 0.15); 
+                if (beat === 3) playTone(98.00, 'sawtooth', 0.4, 0.15); 
+                if (beat === 6) playTone(116.54, 'square', 0.2, 0.1);  
+                if (beat === 8) playTone(130.81, 'square', 0.2, 0.1);  
                 if (beat % 2 === 0) playHiHat();
             } 
             else if (currentMusicType === 'chill') {
                 const beat = noteIndex % 32;
-                if (beat === 0) playTone(196.00, 'triangle', 2, 0.05); // G3
-                if (beat === 8) playTone(246.94, 'triangle', 2, 0.05); // B3
-                if (beat === 16) playTone(293.66, 'triangle', 2, 0.05); // D4
-                if (beat === 24) playTone(392.00, 'triangle', 2, 0.05); // G4
+                if (beat === 0) playTone(196.00, 'triangle', 2, 0.05); 
+                if (beat === 8) playTone(246.94, 'triangle', 2, 0.05); 
+                if (beat === 16) playTone(293.66, 'triangle', 2, 0.05); 
+                if (beat === 24) playTone(392.00, 'triangle', 2, 0.05); 
             }
             noteIndex++;
         }
@@ -760,7 +800,6 @@
 
         function openMainMenu() {
             document.getElementById('main-menu-overlay').style.display = 'flex';
-            // Update stats on menu
             document.getElementById('menu-shards').innerText = formatNum(game.shards);
             document.getElementById('menu-rebirths').innerText = formatNum(game.rebirths);
         }
@@ -782,13 +821,10 @@
 
         function clickPlanet(e) {
             if(e) e.preventDefault(); 
-            // Prevent clicking if menu is open
             if(document.getElementById('main-menu-overlay').style.display === 'flex') return;
-
             game.clicks += calculateClickPower();
             playClickSound();
             updateDisplay();
-            
             const btn = document.getElementById('clicker-btn');
             btn.style.transform = 'scale(0.92)';
             setTimeout(() => btn.style.transform = 'scale(1)', 50);
@@ -804,18 +840,13 @@
             document.getElementById('display-cpt').innerText = formatNum(calculateClickPower());
             document.getElementById('display-cps').innerText = formatNum(calculateCPS());
             document.getElementById('rebirth-earn').innerText = formatNum(Math.floor(game.clicks / 2000) + game.shardUpgrades.extraShard);
-
-            // Menu Stats Update (in real time if menu is open)
             document.getElementById('menu-shards').innerText = formatNum(game.shards);
             document.getElementById('menu-rebirths').innerText = formatNum(game.rebirths);
-
-            // Costs
             document.getElementById('cost-click').innerText = formatNum(game.clickCost);
             document.getElementById('cost-auto-0').innerText = formatNum(Math.floor(100 * Math.pow(1.1, game.autoClickers[0])));
             document.getElementById('cost-auto-1').innerText = formatNum(Math.floor(500 * Math.pow(1.1, game.autoClickers[1])));
             document.getElementById('cost-auto-2').innerText = formatNum(Math.floor(2000 * Math.pow(1.1, game.autoClickers[2])));
 
-            // Frenzy Btn
             const btn = document.getElementById('frenzy-btn');
             if (game.cooldowns.frenzy > 0) {
                 btn.innerText = `Frenzy (${game.cooldowns.frenzy}s)`;
@@ -832,12 +863,176 @@
             }
         }
 
+        /* --- MINIGAMES (NEW & UPDATED) --- */
+        
+        // --- 1. SLOTS ---
+        const slotSymbols = ['🚀', '👽', '🪐', '⭐️', '☄️'];
+        let isSpinning = false;
+
+        function playSlots() {
+            if (isSpinning) return;
+            const cost = 1000;
+            if (game.clicks < cost) { notify("Not enough clicks!"); return; }
+            
+            game.clicks -= cost;
+            updateDisplay();
+            isSpinning = true;
+            document.getElementById('slot-btn').disabled = true;
+            document.getElementById('slot-msg').innerText = "Spinning...";
+
+            const r1 = document.getElementById('reel-1');
+            const r2 = document.getElementById('reel-2');
+            const r3 = document.getElementById('reel-3');
+            
+            let spins = 0;
+            const interval = setInterval(() => {
+                r1.innerText = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+                r2.innerText = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+                r3.innerText = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+                playTone(300, 'square', 0.05, 0.05); // Spin sound
+                spins++;
+                if(spins > 20) {
+                    clearInterval(interval);
+                    finalizeSlots();
+                }
+            }, 100);
+        }
+
+        function finalizeSlots() {
+            const r1 = document.getElementById('reel-1');
+            const r2 = document.getElementById('reel-2');
+            const r3 = document.getElementById('reel-3');
+            
+            const v1 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+            const v2 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+            const v3 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+            
+            // Staggered stop effect
+            setTimeout(() => { r1.innerText = v1; playTone(500, 'sine', 0.1); }, 0);
+            setTimeout(() => { r2.innerText = v2; playTone(500, 'sine', 0.1); }, 300);
+            setTimeout(() => { 
+                r3.innerText = v3; 
+                playTone(500, 'sine', 0.1); 
+                checkSlotWin(v1, v2, v3);
+            }, 600);
+        }
+
+        function checkSlotWin(v1, v2, v3) {
+            isSpinning = false;
+            document.getElementById('slot-btn').disabled = false;
+            
+            if (v1 === v2 && v2 === v3) {
+                const reward = calculateClickPower() * 500;
+                game.clicks += reward;
+                game.shards += 1;
+                document.getElementById('slot-msg').innerText = `JACKPOT! +${formatNum(reward)} Clicks & 1💎`;
+                document.getElementById('slot-msg').style.color = 'var(--green)';
+                playSkillSound();
+            } else if (v1 === v2 || v2 === v3 || v1 === v3) {
+                const reward = calculateClickPower() * 50;
+                game.clicks += reward;
+                document.getElementById('slot-msg').innerText = `Mini Win! +${formatNum(reward)} Clicks`;
+                document.getElementById('slot-msg').style.color = '#fff';
+            } else {
+                document.getElementById('slot-msg').innerText = "Try again!";
+                document.getElementById('slot-msg').style.color = 'var(--grey)';
+            }
+            updateDisplay();
+        }
+
+        // --- 2. MEMORY MATRIX ---
+        const memoryIcons = ['👽', '👾', '🤖', '🎃', '💀', '👻', '🐲', '👹'];
+        let memoryGrid = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let isMemoryLocked = false;
+
+        function startMemoryGame() {
+            const cost = 500;
+            if (game.clicks < cost) { notify("Not enough clicks!"); return; }
+            if (document.getElementById('memory-btn').innerText === "Playing...") return;
+
+            game.clicks -= cost;
+            updateDisplay();
+            
+            // Setup Board
+            const gridEl = document.getElementById('memory-grid');
+            gridEl.innerHTML = '';
+            flippedCards = [];
+            matchedPairs = 0;
+            isMemoryLocked = false;
+            document.getElementById('memory-btn').innerText = "Playing...";
+            document.getElementById('memory-btn').disabled = true;
+
+            // Create pairs
+            let deck = [...memoryIcons, ...memoryIcons];
+            deck.sort(() => Math.random() - 0.5);
+
+            deck.forEach((icon, index) => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.dataset.icon = icon;
+                card.dataset.index = index;
+                card.innerText = '?';
+                card.onclick = () => flipCard(card);
+                gridEl.appendChild(card);
+            });
+        }
+
+        function flipCard(card) {
+            if (isMemoryLocked) return;
+            if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+            // Flip
+            card.classList.add('flipped');
+            card.innerText = card.dataset.icon;
+            flippedCards.push(card);
+            playTone(600, 'sine', 0.1);
+
+            if (flippedCards.length === 2) {
+                isMemoryLocked = true;
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            const [c1, c2] = flippedCards;
+            if (c1.dataset.icon === c2.dataset.icon) {
+                // Match
+                playTone(800, 'square', 0.1);
+                c1.classList.add('matched');
+                c2.classList.add('matched');
+                matchedPairs++;
+                flippedCards = [];
+                isMemoryLocked = false;
+                
+                if (matchedPairs === 8) {
+                    const reward = calculateClickPower() * 800;
+                    notify(`HACK COMPLETE! +${formatNum(reward)} Clicks`);
+                    game.clicks += reward;
+                    updateDisplay();
+                    document.getElementById('memory-btn').innerText = "Start Hack";
+                    document.getElementById('memory-btn').disabled = false;
+                }
+            } else {
+                // No Match
+                setTimeout(() => {
+                    c1.classList.remove('flipped');
+                    c1.innerText = '?';
+                    c2.classList.remove('flipped');
+                    c2.innerText = '?';
+                    flippedCards = [];
+                    isMemoryLocked = false;
+                }, 800);
+            }
+        }
+
+
         /* --- SHOP ACTIONS --- */
         function buyClickUpgrade() {
             if (game.clicks >= game.clickCost) {
                 game.clicks -= game.clickCost;
                 game.clickMultiplier *= 2;
-                // CHANGED: Cost now doubles (x2) instead of x4.5
                 game.clickCost = Math.floor(game.clickCost * 2);
                 updateDisplay();
             }
@@ -1020,12 +1215,10 @@
             updateDisplay();
         }
         
-        // --- HARD RESET NOW GOES TO MENU ---
         function hardReset() {
             if (confirm("Are you sure? This will wipe everything!")) {
                 localStorage.removeItem('cosmicClickerSave');
                 game = JSON.parse(JSON.stringify(defaultState));
-                // Instead of reload, just reset state and open menu
                 endEvent();
                 updateDisplay();
                 renderThemes();
@@ -1060,7 +1253,6 @@
             updateDisplay();
             updateMusicState();
             
-            // ALWAYS SHOW MENU ON LOAD
             openMainMenu();
         }
 
@@ -1068,4 +1260,4 @@
         setInterval(saveGame, 30000);
     </script>
 </body>
-    </html>
+</html>
