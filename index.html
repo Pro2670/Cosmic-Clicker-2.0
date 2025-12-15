@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cosmic Clickers - Minigame Update</title>
+    <title>Cosmic Clickers - Visual Fixes</title>
     <style>
         /* --- CSS VARIABLES & BASE --- */
         :root {
@@ -35,8 +35,7 @@
             position: relative;
         }
 
-        /* --- THEMES (Theme styles removed for brevity, assuming they are in the full code) --- */
-        /* Placeholder for Themes (These would be defined in a real CSS file) */
+        /* --- THEMES (Placeholder for specific theme backgrounds) --- */
         .theme-default { 
             background: linear-gradient(135deg, #0f172a, #434343);
             --primary: #a855f7;
@@ -49,6 +48,9 @@
             background: linear-gradient(135deg, #166534, #86efac);
             --primary: #34d399;
         }
+        .theme-mars { background: #7f1d1d; }
+        .theme-neptune { background: #1e3a8a; }
+        /* Add other themes here for full effect, though JS handles the primary color update */
 
         /* --- MAIN MENU --- */
         #main-menu-overlay {
@@ -151,7 +153,7 @@
         /* --- EVENT HUD (FIXED) --- */
         #event-hud {
             position: absolute;
-            top: 60px; /* Below the main header */
+            top: 60px; 
             left: 50%;
             transform: translateX(-50%);
             z-index: 15;
@@ -307,94 +309,85 @@
             border: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* Slots */
-        #slots {
-            display: flex; justify-content: center; gap: 5px;
-            margin-bottom: 15px; font-size: 2.5rem; font-weight: bold;
-            height: 60px; overflow: hidden;
-        }
-        .slot-reel {
-            width: 60px; background: #0f172a;
-            border: 2px solid var(--secondary);
-            border-radius: 5px;
-            display: flex; justify-content: center; align-items: center;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-        }
-
-        /* Memory */
-        #memory-grid {
+        /* --- THEME SHOP STYLES (FIXED) --- */
+        .theme-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 5px;
-            margin: 10px auto;
-            max-width: 300px;
+            gap: 10px;
         }
-        .memory-card {
-            width: 100%;
-            padding-top: 100%; /* Makes cards square */
-            position: relative;
-            background: #475569;
-            border-radius: 5px;
-            color: white;
-            font-size: 1.2rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .memory-card.flipped { background: var(--primary); }
-        .memory-card.matched { background: var(--green); color: #000; }
-        .memory-card > * { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-
-        /* Space Dash */
-        #space-dash-area {
-            width: 90%;
-            max-width: 400px;
-            height: 150px;
-            background: #1e3a8a; /* Deep Space Blue */
-            border: 3px solid var(--primary);
+        .theme-item {
+            padding: 15px;
             border-radius: 8px;
-            margin: 10px auto;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: left;
+            border: 3px solid transparent;
+            color: var(--text-color);
+            transition: transform 0.1s, box-shadow 0.2s;
+            white-space: pre-wrap;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+        }
+        .theme-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        .theme-item.active-theme {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+        }
+        .theme-item.locked {
+            filter: grayscale(80%);
+            opacity: 0.7;
+            font-size: 0.8rem;
+            text-align: center;
+            justify-content: center;
+        }
+
+        /* --- SETTINGS TOGGLE (FIXED) --- */
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 10px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        .switch {
             position: relative;
-            overflow: hidden;
-            touch-action: manipulation;
-        }
-
-        #dash-player {
-            position: absolute;
-            bottom: 10px;
-            left: 20px;
-            width: 25px;
+            display: inline-block;
+            width: 45px;
             height: 25px;
-            background: var(--green);
-            border: 2px solid white;
-            border-radius: 4px;
-            z-index: 10;
-            transition: transform 0.15s ease-out; /* For jumping */
         }
-        
-        #dash-ground {
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
             position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
             bottom: 0;
-            width: 100%;
-            height: 10px;
-            background: #475569; /* Slate 600 */
-            z-index: 5;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 25px;
         }
-
-        .dash-obstacle {
+        .slider:before {
             position: absolute;
-            bottom: 10px;
-            width: 15px;
-            height: 30px;
-            background: var(--danger);
-            border: 2px solid #fff;
-            clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
-            z-index: 8;
+            content: "";
+            height: 19px;
+            width: 19px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
         }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(20px); }
 
-        /* --- MODAL/ADMIN STYLES (Fixed) --- */
+
+        /* --- MODAL/ADMIN STYLES --- */
         .modal {
             position: fixed;
             z-index: 6000;
@@ -404,7 +397,7 @@
             height: 100%;
             overflow: auto;
             background-color: rgba(0,0,0,0.8);
-            display: none; /* Default hidden */
+            display: none; 
             align-items: center;
             justify-content: center;
         }
@@ -455,7 +448,7 @@
             Total Rebirths: <span id="menu-rebirths">0</span> ♻️
         </div>
         <button class="menu-play-btn" onclick="startGame()">PLAY</button>
-        <div style="margin-top:20px; font-size:0.8rem; color:#94a3b8">v3.6 - Space Dash</div>
+        <div style="margin-top:20px; font-size:0.8rem; color:#94a3b8">v3.7 - Themes Fix</div>
     </div>
 
     <button id="top-menu-btn" onclick="openMainMenu()">☰ MENU</button>
@@ -613,11 +606,13 @@
         <div id="panel-themes" class="panel">
             <h3>Theme Shop</h3>
             <p style="font-size:0.8rem">Base Colors: 1💎 | Gradients: 2💎 | Special: 5💎</p>
-            <div class="theme-grid" id="theme-grid"></div>
+            <div class="theme-grid" id="theme-grid">
+                </div>
         </div>
 
         <div id="panel-settings" class="panel">
             <h3>Settings</h3>
+            
             <div class="toggle-row">
                 <span>SFX</span>
                 <label class="switch">
@@ -625,6 +620,7 @@
                     <span class="slider"></span>
                 </label>
             </div>
+            
             <div class="toggle-row">
                 <span>Music</span>
                 <label class="switch">
@@ -632,6 +628,7 @@
                     <span class="slider"></span>
                 </label>
             </div>
+
             <div class="shop-item">
                 <button class="btn-buy" style="background:var(--danger); width:100%" onclick="hardReset()">Hard Reset Save</button>
             </div>
@@ -729,7 +726,7 @@
         let game = JSON.parse(JSON.stringify(defaultState));
         const autoRates = [1, 10, 50]; 
 
-        /* --- THEMES --- */
+        /* --- THEMES (Expanded with specific background colors/gradients) --- */
         const themes = [
             { id: 'theme-default', name: 'Cosmic', cost: 0, type: 'gradient', color: 'linear-gradient(135deg, #000, #434343)' },
             { id: 'theme-mars', name: 'Mars', cost: 1, type: 'plain', color: '#7f1d1d' },
@@ -863,6 +860,7 @@
             document.querySelector(`.tab-btn[onclick="switchTab('${id}')"]`).classList.add('active');
             
             if(id === 'leaderboard') renderLeaderboard();
+            if(id === 'themes') renderThemes(); // Rerender themes when opening the tab
         }
 
         /* --- MENU LOGIC --- */
@@ -944,7 +942,7 @@
             checkLeaderboard();
         }
 
-        /* --- MINI-GAMES LOGIC (FULLY IMPLEMENTED) --- */
+        /* --- MINI-GAMES LOGIC --- */
         
         // --- 1. SLOTS ---
         const slotSymbols = ['🚀', '👽', '🪐', '⭐️', '☄️'];
@@ -970,7 +968,7 @@
                 r1.innerText = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
                 r2.innerText = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
                 r3.innerText = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-                playTone(300, 'square', 0.05, 0.05); // Spin sound
+                playTone(300, 'square', 0.05, 0.05); 
                 spins++;
                 if(spins > 20) {
                     clearInterval(interval);
@@ -1085,7 +1083,7 @@
                 playTone(800, 'square', 0.1);
                 c1.classList.add('matched');
                 c2.classList.add('matched');
-                c1.querySelector('span').innerText = c1.dataset.icon; // Ensure matched state shows icon
+                c1.querySelector('span').innerText = c1.dataset.icon; 
                 c2.querySelector('span').innerText = c2.dataset.icon;
                 matchedPairs++;
                 flippedCards = [];
@@ -1377,7 +1375,6 @@
             const kfName = `fall-${opts.shape.charCodeAt(0)}`;
             let ruleExists = Array.from(styleSheet.cssRules).some(r => r.name === kfName);
             if (!ruleExists) {
-                // Simplified keyframe injection (only works if CSS rule count is under browser limit)
                 const keyframes = `@keyframes ${kfName} { 0% { transform: translateY(-100px) rotate(0deg); } 100% { transform: translateY(100vh) rotate(360deg); } }`;
                 try {
                     styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
@@ -1397,23 +1394,54 @@
         }
         function stopParticles() { document.getElementById('particle-overlay').innerHTML = ''; }
 
-        /* --- THEMES & EXTRAS --- */
+        /* --- THEMES & EXTRAS (FIXED renderThemes) --- */
         function renderThemes() {
             const grid = document.getElementById('theme-grid');
             grid.innerHTML = '';
+            
+            // Set the grid template rows to accommodate all items
+            grid.style.gridTemplateRows = `repeat(${themes.length}, auto)`;
+
             themes.forEach(t => {
                 const unlocked = game.themesUnlocked.includes(t.id);
                 const d = document.createElement('div');
-                d.className = `theme-item ${unlocked?'':'locked'} ${game.currentTheme===t.id?'active-theme':''}`;
+                d.className = `theme-item ${t.id} ${unlocked?'':'locked'} ${game.currentTheme===t.id?'active-theme':''}`;
+                
+                // Use the theme's specific background color/gradient
                 d.style.background = t.color;
+                
+                // Set the text color based on background (optional, for readability)
+                if(t.id === 'theme-matrix' || t.id === 'theme-void' || t.id === 'theme-default') {
+                    d.style.color = 'white';
+                } else if (t.id === 'theme-gold') {
+                    d.style.color = 'black';
+                } else {
+                    d.style.color = 'white';
+                }
+
                 d.innerText = t.name + (unlocked ? '' : `\n(${t.cost}💎)`);
+
                 d.onclick = () => {
-                    if(unlocked) { document.body.className = t.id; game.currentTheme = t.id; renderThemes(); }
-                    else if(game.shards >= t.cost) { 
-                        game.shards -= t.cost; 
-                        game.themesUnlocked.push(t.id); 
+                    if(unlocked) { 
+                        // APPLY THEME
+                        const currentThemeData = themes.find(th => th.id === t.id);
                         document.body.className = t.id; 
                         game.currentTheme = t.id; 
+                        // Also update the CSS variable for the clicker button
+                        document.documentElement.style.setProperty('--primary', getPrimaryColor(t.id));
+                        renderThemes(); 
+                    }
+                    else if(game.shards >= t.cost) { 
+                        // BUY THEME
+                        game.shards -= t.cost; 
+                        game.themesUnlocked.push(t.id); 
+                        
+                        const currentThemeData = themes.find(th => th.id === t.id);
+                        document.body.className = t.id; 
+                        game.currentTheme = t.id; 
+                        document.documentElement.style.setProperty('--primary', getPrimaryColor(t.id));
+                        
+                        notify(`Unlocked ${t.name}!`);
                         renderThemes(); 
                         updateDisplay(); 
                     } else { notify("Not enough shards to unlock theme!"); }
@@ -1421,10 +1449,30 @@
                 grid.appendChild(d);
             });
         }
+        
+        function getPrimaryColor(themeId) {
+            // Determine a suitable "primary" color for the clicker/UI based on the theme
+            switch(themeId) {
+                case 'theme-mars': return '#f87171';
+                case 'theme-neptune': return '#3b82f6';
+                case 'theme-gold': return '#BF953F';
+                case 'theme-nebula': return '#db2777';
+                case 'theme-matrix': return '#00ff41'; // Bright green for matrix
+                case 'theme-lava': return '#f97316';
+                case 'theme-aqua': return '#06b6d4';
+                case 'theme-void': return '#7f1d1d';
+                case 'theme-sunset': return '#f97316';
+                case 'theme-silver': return '#94a3b8';
+                default: return '#a855f7'; // Default cosmic violet
+            }
+        }
+
         function toggleSetting(s) { 
             game.settings[s] = document.getElementById(`toggle-${s}`).checked; 
             if(s==='music') updateMusicState();
+            // Note: UpdateDisplay not strictly needed here but useful for saving
         }
+
         function activateFrenzy() {
             if(game.cooldowns.frenzy === 0) { 
                 game.cooldowns.frenzy = 30; 
@@ -1470,9 +1518,8 @@
                 if(remaining <= 0) endEvent();
             } else {
                 game.eventTimer++;
-                // Check for event trigger only if event is not active and game is running
+                // Check for event trigger only if event is not active and game is running (approx once every 10 min)
                 if(game.eventTimer >= 600 && document.getElementById('main-menu-overlay').style.display === 'none') { 
-                    // Randomly select one of the two defined events
                     const eventKeys = Object.keys(eventData).filter(k => k !== 'none');
                     startEvent(eventKeys[Math.floor(Math.random() * eventKeys.length)]);
                 }
@@ -1558,7 +1605,6 @@
             const s = localStorage.getItem('cosmicClickerSave');
             if(s) {
                 const p = JSON.parse(s);
-                // Merge loaded state with default state to handle new properties
                 game = { ...defaultState, ...p };
                 game.shardUpgrades = { ...defaultState.shardUpgrades, ...(p.shardUpgrades || {}) };
                 game.settings = { ...defaultState.settings, ...(p.settings || {}) };
@@ -1577,12 +1623,13 @@
                             document.getElementById('hud-mult').innerText = d.mult + 'X';
                             startParticles(d.particles);
                         } else {
-                            endEvent(); // Invalid event data
+                            endEvent(); 
                         }
                     } else endEvent();
                 } else {
-                    // Important: Ensure the body class is set correctly even if no event is active
                     document.body.className = game.currentTheme;
+                    // Re-set the primary color variable on load for non-default themes
+                    document.documentElement.style.setProperty('--primary', getPrimaryColor(game.currentTheme));
                 }
             }
             
@@ -1593,7 +1640,6 @@
             updateDisplay();
             updateMusicState();
             
-            // Set initial button states for shard upgrades
             document.getElementById('extraShardCount').innerText = game.shardUpgrades.extraShard;
             document.getElementById('startBonusStatus').innerText = game.shardUpgrades.startBonus ? 'Unlocked' : 'Locked';
 
