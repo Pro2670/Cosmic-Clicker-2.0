@@ -16,6 +16,7 @@
             --grey: #94a3b8; /* Slate 400 */
             --danger: #ef4444; /* Red 500 */
             --cooldown-color: #f97316; /* Orange */
+            --leaderboard-bg: #1e293b;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -262,130 +263,26 @@
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(16px); }
 
-        /* --- THEME GRID --- */
-        .theme-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-            gap: 10px;
-            padding-top: 10px;
+        /* --- LEADERBOARD (FEATS) --- */
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            margin-top: 10px;
         }
-        .theme-item {
-            aspect-ratio: 1 / 1;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 3px solid transparent;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.75rem;
-            text-align: center;
-            position: relative;
+        .leaderboard-table th, .leaderboard-table td {
+            padding: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .theme-item.active-theme { border-color: var(--primary); box-shadow: 0 0 10px var(--primary); }
-
-        /* --- ADMIN/MODAL --- */
-        #admin-trigger { position: absolute; top: 0; right: 0; width: 50px; height: 50px; z-index: 100; cursor: pointer; }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            z-index: 3000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: #1e293b;
-            padding: 20px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 350px;
-            text-align: center;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-        }
-        .admin-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        .admin-input { flex-grow: 1; padding: 8px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: var(--text-color); }
-
-        /* --- NOTIFICATION AREA --- */
-        #notification-area { position: fixed; top: 70px; right: 10px; z-index: 2000; }
-        .notif {
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 10px 15px;
-            margin-bottom: 5px;
-            border-radius: 6px;
-            opacity: 0;
-            animation: fadeInOut 2.5s ease-in-out forwards;
+        .leaderboard-table th {
+            color: var(--primary);
             font-size: 0.9rem;
+            background: var(--leaderboard-bg);
         }
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateX(100%); }
-            10% { opacity: 1; transform: translateX(0); }
-            90% { opacity: 1; transform: translateX(0); }
-            100% { opacity: 0; transform: translateX(100%); }
-        }
-
-        /* --- ACTIVE SKILLS & GOLDEN PLANET --- */
-        #active-skills { display: flex; gap: 15px; margin-bottom: 20px; }
-        .skill-btn {
-            padding: 10px 15px;
-            background: var(--primary);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            width: 120px;
-            height: 40px;
-            transition: background 0.2s, opacity 0.2s;
-        }
-        .skill-btn:disabled { background: var(--cooldown-color); cursor: not-allowed; }
-
-        .golden-planet {
-            position: absolute;
-            width: 50px; height: 50px;
-            background: radial-gradient(circle at 30% 30%, gold, var(--cooldown-color));
-            border-radius: 50%;
-            box-shadow: 0 0 20px gold;
-            cursor: pointer;
-            animation: pulse 1s infinite alternate;
-            z-index: 5;
-            transition: opacity 0.3s;
-        }
-        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+        .leaderboard-table td:first-child { font-weight: bold; } /* Rank */
+        .leaderboard-table tr:nth-child(even) { background: rgba(0,0,0,0.1); }
+        .leaderboard-table .highlight-row { background: rgba(168, 85, 247, 0.2); }
         
-        /* --- EVENT HUD --- */
-        #event-hud {
-            position: fixed;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-150px);
-            background: rgba(0, 0, 0, 0.9);
-            border: 2px solid var(--green);
-            padding: 10px 20px;
-            border-radius: 10px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            font-size: 0.9rem;
-            z-index: 100;
-            opacity: 0;
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
-        }
-        #event-hud.active { opacity: 1; transform: translateX(-50%) translateY(0); }
-        .hud-circle {
-            width: 50px; height: 50px;
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-weight: bold; font-size: 0.9rem;
-        }
-        .hud-mult { background: var(--primary); }
-        .hud-time { background: var(--cooldown-color); width: 60px; }
-        
-        #particle-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
-
         /* --- MINI-GAMES --- */
         .mini-game-container {
             padding: 15px;
@@ -442,6 +339,59 @@
             cursor: default;
         }
 
+        /* Space Jump (New Game) */
+        #space-jump-container {
+            width: 100%;
+            height: 150px;
+            background: #000;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 3px solid var(--secondary);
+        }
+        #space-jump-ground {
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%; height: 10px;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+        #jump-player {
+            position: absolute;
+            bottom: 10px; left: 20px;
+            width: 25px; height: 25px;
+            background: var(--green);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #000;
+            transition: transform 0.1s;
+        }
+        .jump-obstacle {
+            position: absolute;
+            bottom: 10px;
+            width: 20px; 
+            background: var(--danger);
+            box-shadow: 0 0 10px var(--danger);
+        }
+        #jump-score {
+            position: absolute;
+            top: 5px; right: 5px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        #jump-msg {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-shadow: 0 0 5px #000;
+        }
+
+
         @media (max-width: 600px) {
             header { padding-left: 10px; justify-content: space-between; margin-top: 40px; }
             #top-menu-btn { top: 10px; left: 10px; width: auto; }
@@ -461,7 +411,7 @@
             Total Rebirths: <span id="menu-rebirths">0</span> ♻️
         </div>
         <button class="menu-play-btn" onclick="startGame()">PLAY</button>
-        <div style="margin-top:20px; font-size:0.8rem; color:#94a3b8">v3.5 - Minigames</div>
+        <div style="margin-top:20px; font-size:0.8rem; color:#94a3b8">v3.6 - Space Jump & Feats</div>
     </div>
 
     <button id="top-menu-btn" onclick="openMainMenu()">☰ MENU</button>
@@ -500,6 +450,7 @@
         <button class="tab-btn" onclick="switchTab('minigames')">Mini-Games</button>
         <button class="tab-btn" onclick="switchTab('shards')">Shards</button>
         <button class="tab-btn" onclick="switchTab('themes')">Themes</button>
+        <button class="tab-btn" onclick="switchTab('feats')">Feats</button>
         <button class="tab-btn" onclick="switchTab('settings')">Settings</button>
         <button class="tab-btn" onclick="switchTab('rebirth')" style="color: #fca5a5">Rebirth</button>
     </div>
@@ -543,6 +494,18 @@
         <div id="panel-minigames" class="panel">
             
             <div class="mini-game-container">
+                <h3>Space Jump</h3>
+                <p style="font-size:0.8rem">Click to jump! Avoid the spikes to win a massive click bonus. (Cost: 1000 Clicks)</p>
+                <div id="space-jump-container" onclick="jumpGameJump()">
+                    <div id="space-jump-ground"></div>
+                    <div id="jump-player">🚀</div>
+                    <div id="jump-score">Score: 0</div>
+                    <div id="jump-msg" style="color:var(--green)">Click to Start!</div>
+                </div>
+                <button class="btn-buy" style="width:100%" id="jump-btn" onclick="startJumpGame()">Play Space Jump</button>
+            </div>
+
+            <div class="mini-game-container">
                 <h3>Cosmic Slots</h3>
                 <p style="font-size:0.8rem">Match 3 symbols to win big! (Cost: 1000 Clicks)</p>
                 <div id="slots">
@@ -585,6 +548,29 @@
             <h3>Theme Shop</h3>
             <p style="font-size:0.8rem">Base Colors: 1💎 | Gradients: 2💎 | Special: 5💎</p>
             <div class="theme-grid" id="theme-grid"></div>
+        </div>
+
+        <div id="panel-feats" class="panel">
+            <h3>Local Leaderboard</h3>
+            <p style="font-size:0.8rem; color:var(--grey)">Your top lifetime achievements.</p>
+            
+            <h4 style="color:var(--green)">Top Clicks (Lifetime)</h4>
+            <table class="leaderboard-table">
+                <thead><tr><th>Rank</th><th>Score</th></tr></thead>
+                <tbody id="lb-clicks"></tbody>
+            </table>
+
+            <h4 style="color:var(--primary)">Top Shards (Held)</h4>
+            <table class="leaderboard-table">
+                <thead><tr><th>Rank</th><th>Score</th></tr></thead>
+                <tbody id="lb-shards"></tbody>
+            </table>
+
+            <h4 style="color:#fca5a5">Top Rebirths</h4>
+            <table class="leaderboard-table">
+                <thead><tr><th>Rank</th><th>Score</th></tr></thead>
+                <tbody id="lb-rebirths"></tbody>
+            </table>
         </div>
 
         <div id="panel-settings" class="panel">
@@ -659,7 +645,10 @@
             shardUpgrades: { extraShard: 0, startBonus: false }, settings: { sfx: true, music: false },
             event: { active: false, name: null, multiplier: 1, duration: 0, endTime: 0, particles: null, originalTheme: 'theme-default' },
             cooldowns: { frenzy: 0, frenzyMax: 300, frenzyDuration: 30 }, 
-            eventTimer: 0 
+            eventTimer: 0,
+            leaderboard: {
+                clicks: [], shards: [], rebirths: []
+            }
         };
 
         let game = JSON.parse(JSON.stringify(defaultState));
@@ -764,7 +753,9 @@
 
         /* --- UI UTILITIES --- */
         function formatNum(num) {
-            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
             if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
             return Math.floor(num);
         }
@@ -789,6 +780,8 @@
             document.getElementById('panel-'+id).classList.add('active');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelector(`.tab-btn[onclick="switchTab('${id}')"]`).classList.add('active');
+            
+            if(id === 'feats') renderLeaderboard();
         }
 
         /* --- MENU LOGIC --- */
@@ -863,7 +856,53 @@
             }
         }
 
-        /* --- MINIGAMES (NEW & UPDATED) --- */
+        /* --- LEADERBOARD LOGIC (NEW) --- */
+        function updateLeaderboard(key, score) {
+            // Find existing score or set a new one
+            let found = false;
+            for(let i=0; i<game.leaderboard[key].length; i++) {
+                if (game.leaderboard[key][i].id === 'player') {
+                    if (score > game.leaderboard[key][i].score) {
+                        game.leaderboard[key][i].score = score;
+                    }
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                game.leaderboard[key].push({ id: 'player', score: score });
+            }
+
+            // Sort and trim (keep top 5 plus the player's score if it's outside the top 5)
+            game.leaderboard[key].sort((a, b) => b.score - a.score);
+            
+            // Only keep top 5 unique entries (since 'player' can appear only once now)
+            game.leaderboard[key] = game.leaderboard[key].slice(0, 5);
+        }
+
+        function renderLeaderboard() {
+            const keys = ['clicks', 'shards', 'rebirths'];
+            keys.forEach(key => {
+                const tbody = document.getElementById(`lb-${key}`);
+                tbody.innerHTML = '';
+                
+                // Ensure player's current score is reflected for display
+                const playerScore = (key === 'clicks' ? game.clicks : key === 'shards' ? game.shards : game.rebirths);
+                updateLeaderboard(key, playerScore);
+
+                game.leaderboard[key].forEach((entry, index) => {
+                    const tr = document.createElement('tr');
+                    tr.className = entry.id === 'player' ? 'highlight-row' : '';
+                    tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${formatNum(entry.score)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+        
+        /* --- MINIGAMES --- */
         
         // --- 1. SLOTS ---
         const slotSymbols = ['🚀', '👽', '🪐', '⭐️', '☄️'];
@@ -942,7 +981,6 @@
 
         // --- 2. MEMORY MATRIX ---
         const memoryIcons = ['👽', '👾', '🤖', '🎃', '💀', '👻', '🐲', '👹'];
-        let memoryGrid = [];
         let flippedCards = [];
         let matchedPairs = 0;
         let isMemoryLocked = false;
@@ -1027,6 +1065,155 @@
             }
         }
 
+        // --- 3. SPACE JUMP (NEW) ---
+        let jumpGame = {
+            running: false,
+            playerY: 10,
+            velocityY: 0,
+            gravity: -1.5,
+            jumpStrength: 20,
+            score: 0,
+            obstacles: [],
+            gameInterval: null,
+            obstacleSpawnInterval: null
+        };
+        const playerEl = document.getElementById('jump-player');
+        const jumpContainer = document.getElementById('space-jump-container');
+        const jumpBtn = document.getElementById('jump-btn');
+        const jumpMsg = document.getElementById('jump-msg');
+        const jumpScoreEl = document.getElementById('jump-score');
+
+        function startJumpGame() {
+            const cost = 1000;
+            if (game.clicks < cost) { notify("Not enough clicks!"); return; }
+            if (jumpGame.running) return;
+
+            game.clicks -= cost;
+            updateDisplay();
+            
+            jumpGame.running = true;
+            jumpGame.score = 0;
+            jumpGame.playerY = 10;
+            jumpGame.velocityY = 0;
+            jumpGame.obstacles = [];
+            
+            playerEl.style.bottom = jumpGame.playerY + 'px';
+            playerEl.style.backgroundColor = 'var(--green)';
+            jumpMsg.innerText = '';
+            jumpBtn.disabled = true;
+            jumpScoreEl.innerText = 'Score: 0';
+            
+            // Clear old obstacles
+            jumpContainer.querySelectorAll('.jump-obstacle').forEach(o => o.remove());
+
+            // Start game loop
+            jumpGame.gameInterval = setInterval(updateJumpGame, 30);
+            jumpGame.obstacleSpawnInterval = setInterval(spawnObstacle, 1500 + Math.random() * 1000);
+            
+            notify("Space Jump Started!");
+        }
+
+        function jumpGameJump() {
+            if (!jumpGame.running) {
+                startJumpGame();
+                return; 
+            }
+            if (jumpGame.playerY <= 10) { 
+                jumpGame.velocityY = jumpGame.jumpStrength;
+                playTone(400, 'square', 0.1, 0.1);
+            }
+        }
+        
+        // Handle clicks anywhere in the container
+        jumpContainer.onclick = jumpGameJump;
+
+        function updateJumpGame() {
+            if (!jumpGame.running) return;
+
+            // Player Physics
+            jumpGame.velocityY += jumpGame.gravity;
+            jumpGame.playerY += jumpGame.velocityY;
+
+            if (jumpGame.playerY < 10) {
+                jumpGame.playerY = 10;
+                jumpGame.velocityY = 0;
+            }
+            playerEl.style.bottom = jumpGame.playerY + 'px';
+
+            // Update Obstacles
+            jumpGame.obstacles.forEach(o => {
+                o.x -= 5; // Movement speed
+                o.el.style.left = o.x + 'px';
+                
+                // Collision Check (AABB simplified)
+                const playerRect = playerEl.getBoundingClientRect();
+                const obsRect = o.el.getBoundingClientRect();
+                
+                const collision = 
+                    playerRect.right > obsRect.left && 
+                    playerRect.left < obsRect.right &&
+                    playerRect.bottom > obsRect.top;
+
+                if (collision) {
+                    endJumpGame(false);
+                }
+
+                // Scoring
+                if (o.x < 10 && !o.passed) {
+                    o.passed = true;
+                    jumpGame.score++;
+                    jumpScoreEl.innerText = `Score: ${jumpGame.score}`;
+                    playTone(800, 'sine', 0.05, 0.05); // Score sound
+                }
+                
+                // Clean up passed obstacles
+                if (o.x < -20) o.el.remove();
+            });
+
+            // Remove off-screen obstacles from array
+            jumpGame.obstacles = jumpGame.obstacles.filter(o => o.x > -20);
+        }
+
+        function spawnObstacle() {
+            if (!jumpGame.running) return;
+            
+            const h = 10 + Math.random() * 40; // Height of obstacle
+            const o = document.createElement('div');
+            o.className = 'jump-obstacle';
+            o.style.height = h + 'px';
+            o.style.left = jumpContainer.clientWidth + 'px';
+            jumpContainer.appendChild(o);
+            
+            jumpGame.obstacles.push({ el: o, x: jumpContainer.clientWidth, h: h, passed: false });
+        }
+
+        function endJumpGame(win = false) {
+            if (!jumpGame.running) return;
+            
+            jumpGame.running = false;
+            clearInterval(jumpGame.gameInterval);
+            clearInterval(jumpGame.obstacleSpawnInterval);
+            jumpBtn.disabled = false;
+            playerEl.style.backgroundColor = 'var(--danger)'; // Indicate hit
+            
+            // Calculate reward (Max 20 score)
+            const finalScore = jumpGame.score;
+            const multiplier = Math.min(finalScore, 20); // Cap multiplier at 20
+            const reward = calculateClickPower() * 100 * multiplier; 
+            
+            if (finalScore > 0) {
+                game.clicks += reward;
+                jumpMsg.innerText = `Crashed! Score: ${finalScore}. Earned +${formatNum(reward)} Clicks.`;
+                jumpMsg.style.color = 'var(--cooldown-color)';
+                playTone(100, 'sawtooth', 0.5); // Crash sound
+            } else {
+                jumpMsg.innerText = `Crashed! Score: 0. Better luck next time.`;
+                jumpMsg.style.color = 'var(--danger)';
+                playTone(100, 'sawtooth', 0.5); 
+            }
+            updateDisplay();
+        }
+
 
         /* --- SHOP ACTIONS --- */
         function buyClickUpgrade() {
@@ -1053,7 +1240,7 @@
                 else if (type === 'startBonus') game.shardUpgrades.startBonus = true;
                 updateDisplay();
                 document.getElementById('extraShardCount').innerText = game.shardUpgrades.extraShard;
-                document.getElementById('startBonusStatus').innerText = game.shardUpgrades.startBonus ? 'Unlocked' : 'Locked';
+                document.getElementById('startBonusStatus').innerText = game.shardUpgrades.startBonus ? 'Unlocked' : 'Not Unlocked';
             }
         }
         function doRebirth() {
@@ -1063,11 +1250,16 @@
             if (gain > 0) {
                 game.shards += gain;
                 game.rebirths++;
-                const keep = { shards: game.shards, rebirths: game.rebirths, themesUnlocked: game.themesUnlocked, currentTheme: game.currentTheme, shardUpgrades: game.shardUpgrades, settings: game.settings };
+                // Update leaderboard before reset
+                updateLeaderboard('shards', game.shards);
+                updateLeaderboard('rebirths', game.rebirths);
+
+                const keep = { shards: game.shards, rebirths: game.rebirths, themesUnlocked: game.themesUnlocked, currentTheme: game.currentTheme, shardUpgrades: game.shardUpgrades, settings: game.settings, leaderboard: game.leaderboard };
                 game = { ...defaultState, ...keep };
                 if (game.shardUpgrades.startBonus) game.clicks = 500;
                 endEvent();
                 updateDisplay();
+                notify("Rebirth Complete! You feel stronger.");
             }
         }
 
@@ -1178,6 +1370,11 @@
         setInterval(() => {
             game.clicks += calculateCPS();
             
+            // Update leaderboard (Clicks/Shards/Rebirths)
+            updateLeaderboard('clicks', game.clicks);
+            updateLeaderboard('shards', game.shards);
+            updateLeaderboard('rebirths', game.rebirths);
+            
             if(game.event.active) {
                 const remaining = Math.max(0, (game.event.endTime - Date.now()) / 1000);
                 document.getElementById('hud-time').innerText = formatTime(remaining);
@@ -1233,7 +1430,10 @@
             if(s) {
                 const p = JSON.parse(s);
                 game = { ...defaultState, ...p };
+                // Deep merge necessary objects that may be missing in old saves
                 game.event = { ...defaultState.event, ...(p.event||{}) };
+                game.leaderboard = { ...defaultState.leaderboard, ...(p.leaderboard||{}) };
+
                 if(game.event.active) {
                     const rem = game.event.endTime - Date.now();
                     if(rem > 0) {
@@ -1249,6 +1449,10 @@
             document.body.className = game.currentTheme;
             document.getElementById('toggle-sfx').checked = game.settings.sfx;
             document.getElementById('toggle-music').checked = game.settings.music;
+            
+            document.getElementById('extraShardCount').innerText = game.shardUpgrades.extraShard;
+            document.getElementById('startBonusStatus').innerText = game.shardUpgrades.startBonus ? 'Unlocked' : 'Not Unlocked';
+
             renderThemes();
             updateDisplay();
             updateMusicState();
